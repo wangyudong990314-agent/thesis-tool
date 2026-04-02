@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>高校论文格式生成器</title>
+<script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,'PingFang SC','Microsoft YaHei',sans-serif;background:#f5f4f0;color:#1a1a18;min-height:100vh;padding:2rem 1rem}
+.app{max-width:800px;margin:0 auto}
+.header{text-align:center;margin-bottom:1.5rem}
+.header h1{font-size:22px;font-weight:500;margin-bottom:4px}
+.header p{font-size:13px;color:#666}
+.steps{display:flex;background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:12px;padding:5px;margin-bottom:1.5rem}
+.step{flex:1;display:flex;align-items:center;gap:6px;padding:6px 8px;border-radius:8px}
+.step.active{background:#f5f4f0}
+.step-n{width:20px;height:20px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:500;background:#f0efe8;border:0.5px solid rgba(0,0,0,0.18);color:#666}
+.step.active .step-n{background:#1a1a18;border-color:#1a1a18;color:#fff}
+.step.done .step-n{background:#1D9E75;border-color:#1D9E75;color:#fff}
+.step-label{font-size:12px;font-weight:500;color:#999}
+.step.active .step-label,.step.done .step-label{color:#1a1a18}
+.card{background:#fff;border:0.5px solid rgba(0,0,0,0.12);border-radius:12px;padding:1.25rem 1.5rem;margin-bottom:1rem}
+.card-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.07em;color:#888;margin-bottom:1rem}
+.btn{display:inline-flex;align-items:center;gap:6px;padding:0.55rem 1.2rem;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;font-family:inherit;transition:opacity 0.15s;border:none}
+.btn-primary{background:#1a1a18;color:#fff}
+.btn-primary:hover{opacity:0.83}
+.btn-primary:disabled{opacity:0.35;cursor:not-allowed}
+.btn-secondary{background:transparent;color:#1a1a18;border:0.5px solid rgba(0,0,0,0.25)}
+.btn-secondary:hover{background:#f5f4f0}
+.btn-row{display:flex;gap:8px;flex-wrap:wrap;margin-top:1.25rem}
+.school-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.school-card{border:0.5px solid rgba(0,0,0,0.14);border-radius:10px;padding:0.875rem 1rem;cursor:pointer;transition:all 0.12s;background:#fff}
+.school-card:hover{border-color:rgba(0,0,0,0.35);background:#fafaf8}
+.school-card.selected{border:2px solid #1a1a18;background:#fafaf8}
+.school-name{font-size:13px;font-weight:500;margin-bottom:2px}
+.school-sub{font-size:11px;color:#888}
+.school-badge{display:inline-block;font-size:10px;padding:2px 6px;border-radius:4px;background:#E6F1FB;color:#185FA5;font-weight:500;margin-top:4px}
+.edit-section{margin-bottom:1.25rem}
+.edit-section-title{font-size:11px;font-weight:500;text-transform:uppercase;letter-spacing:0.06em;color:#888;margin-bottom:8px;padding-bottom:4px;border-bottom:0.5px solid rgba(0,0,0,0.08)}
+.edit-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:8px}
+@media(max-width:540px){.edit-grid{grid-template-columns:1fr}}
+.edit-field label{display:block;font-size:11px;color:#888;margin-bottom:4px}
+.edit-field input,.edit-field select{width:100%;padding:6px 8px;border:0.5px solid rgba(0,0,0,0.2);border-radius:6px;font-size:13px;font-family:inherit;background:#fff;color:#1a1a18;outline:none}
+.edit-field input:focus,.edit-field select:focus{border-color:rgba(0,0,0,0.45)}
+.preview-paper{background:#fff;border:0.5px solid rgba(0,0,0,0.15);border-radius:8px;padding:2rem 2.5rem;font-family:'Songti SC','SimSun',serif;color:#000;box-shadow:0 1px 6px rgba(0,0,0,0.06)}
+.preview-meta{font-size:9px;text-align:center;border-bottom:0.5px solid #ccc;padding-bottom:5px;margin-bottom:12px;font-family:-apple-system,sans-serif;color:#777}
+.preview-foot{font-size:9px;text-align:center;border-top:0.5px solid #ccc;padding-top:5px;margin-top:12px;font-family:-apple-system,sans-serif;color:#777}
+.preview-body-text{text-indent:2em;line-height:1.8;margin-bottom:6px}
+.chapter-list{display:flex;flex-direction:column}
+.chapter-row{display:flex;align-items:center;gap:8px;padding:5px 0;border-bottom:0.5px solid rgba(0,0,0,0.06);font-size:12px}
+.chapter-row:last-child{border-bottom:none}
+.ctag{font-size:10px;padding:2px 6px;border-radius:4px;font-weight:500;flex-shrink:0}
+.ctag-cover{background:#FEF3C7;color:#92400E}
+.ctag-front{background:#E0F2FE;color:#0369A1}
+.ctag-body{background:#EAF3DE;color:#3B6D11}
+.ctag-end{background:#F3E8FF;color:#6B21A8}
+.success-wrap{text-align:center;padding:2rem 1rem}
+.success-icon{width:52px;height:52px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem}
+.success-wrap h2{font-size:18px;font-weight:500;margin-bottom:6px}
+.success-wrap p{font-size:13px;color:#666;margin-bottom:1.5rem;line-height:1.7}
+.note-box{font-size:12px;color:#666;line-height:1.9}
+.spinner{display:inline-block;width:20px;height:20px;border:2px solid transparent;border-top-color:#1a1a18;border-radius:50%;animation:spin 0.7s linear infinite}
+@keyframes spin{to{transform:rotate(360deg)}}
+.hidden{display:none!important}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="header">
+    <h1>高校毕业论文格式生成器</h1>
+    <p>选择学校 → 确认格式 → 预览 → 下载 Word 模板</p>
+  </div>
+  <div class="steps">
+    <div class="step active" id="s1"><div class="step-n">1</div><span class="step-label">选择学校</span></div>
+    <div class="step" id="s2"><div class="step-n">2</div><span class="step-label">确认格式</span></div>
+    <div class="step" id="s3"><div class="step-n">3</div><span class="step-label">预览模板</span></div>
+    <div class="step" id="s4"><div class="step-n">4</div><span class="step-label">下载文件</span></div>
+  </div>
+
+  <!-- 第一页 -->
+  <div id="page1">
+    <div class="card">
+      <div class="card-title">选择学校</div>
+      <div class="school-grid" id="school-grid"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" id="btn-to2" onclick="goTo2()" disabled>下一步：确认格式</button>
+    </div>
+  </div>
+
+  <!-- 第二页 -->
+  <div id="page2" class="hidden">
+    <div class="card">
+      <div class="card-title" id="edit-title">格式参数</div>
+      <div id="edit-fields"></div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goTo3()">下一步：预览模板</button>
+      <button class="btn btn-secondary" onclick="goTo1()">返回</button>
+    </div>
+  </div>
+
+  <!-- 第三页 -->
+  <div id="page3" class="hidden">
+    <div class="card">
+      <div class="card-title">排版预览</div>
+      <div class="preview-paper" id="preview-paper"></div>
+    </div>
+    <div class="card">
+      <div class="card-title">模板章节结构</div>
+      <div class="chapter-list">
+        <div class="chapter-row"><span class="ctag ctag-cover">封面</span>封面页（单面打印）</div>
+        <div class="chapter-row"><span class="ctag ctag-cover">声明</span>学位论文原创性声明（单面打印）</div>
+        <div class="chapter-row"><span class="ctag ctag-cover">答辩</span>答辩委员会名单（单面打印）</div>
+        <div class="chapter-row"><span class="ctag ctag-front">摘要</span>中文摘要（页码 Ⅰ）</div>
+        <div class="chapter-row"><span class="ctag ctag-front">摘要</span>英文 Abstract（页码 Ⅱ）</div>
+        <div class="chapter-row"><span class="ctag ctag-front">目录</span>目录（自动生成）</div>
+        <div class="chapter-row"><span class="ctag ctag-body">正文</span>第1章 绪论</div>
+        <div class="chapter-row"><span class="ctag ctag-body">正文</span>第2章 相关工作</div>
+        <div class="chapter-row"><span class="ctag ctag-body">正文</span>第3章 研究方法</div>
+        <div class="chapter-row"><span class="ctag ctag-body">正文</span>第4章 实验与分析</div>
+        <div class="chapter-row"><span class="ctag ctag-body">正文</span>第5章 总结与展望</div>
+        <div class="chapter-row"><span class="ctag ctag-end">结尾</span>参考文献</div>
+        <div class="chapter-row"><span class="ctag ctag-end">结尾</span>致谢</div>
+      </div>
+    </div>
+    <div class="btn-row">
+      <button class="btn btn-primary" onclick="goTo4()">生成并下载 Word 模板</button>
+      <button class="btn btn-secondary" onclick="goTo2()">返回修改格式</button>
+    </div>
+  </div>
+
+  <!-- 第四页 -->
+  <div id="page4" class="hidden">
+    <div class="card" id="gen-loading" style="text-align:center;padding:2.5rem">
+      <div style="margin-bottom:1rem"><span class="spinner"></span></div>
+      <p style="font-size:14px;color:#666">正在生成 .docx 文件，请稍候…</p>
+    </div>
+    <div class="card hidden" id="gen-done">
+      <div class="success-wrap">
+        <div class="success-icon">
+          <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+            <path d="M4 11l5 5 9-9" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2>Word 模板已生成</h2>
+        <p id="done-desc">模板已下载，包含完整章节结构与格式设置。</p>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap">
+          <button class="btn btn-primary" onclick="redownload()">重新下载</button>
+          <button class="btn btn-secondary" onclick="goTo1()">生成新模板</button>
+        </div>
+      </div>
+    </div>
+    <div class="card hidden" id="usage-card">
+      <div class="card-title">使用说明</div>
+      <div class="note-box">
+        <p>① 用 Microsoft Word 或 WPS 打开下载的文件</p>
+        <p>② 封面、声明、答辩委员会名单部分单面打印；摘要之后双面打印</p>
+        <p>③ 摘要至目录页码为罗马数字，正文起自动重置为阿拉伯数字 1</p>
+        <p>④ 图编号格式为"图2.1"（图题在图下方）；表编号格式为"表3.1"（表题在表上方）</p>
+        <p>⑤ 点击目录区域，在 Word 中选择"更新域"可自动生成目录页码</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SCHOOLS = [
+  { id:'xmu', name:'厦门大学', dept:'电子学院', type:'研究生',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
+      marginTop:3.0,marginBottom:3.0,marginLeft:3.0,marginRight:3.0,
+      h1Font:'黑体',h1Size:15,h1SpaceBefore:24,h1SpaceAfter:18,
+      h2Font:'黑体',h2Size:14,h2SpaceBefore:13,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:10,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:12,headerFont:'宋体',headerSize:9 }},
+  { id:'pku', name:'北京大学', dept:'通用格式', type:'本科',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
+      marginTop:2.5,marginBottom:2.5,marginLeft:3.0,marginRight:2.5,
+      h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:12,
+      h2Font:'黑体',h2Size:14,h2SpaceBefore:18,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:12,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
+  { id:'tsinghua', name:'清华大学', dept:'通用格式', type:'硕士',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
+      marginTop:2.5,marginBottom:2.5,marginLeft:3.0,marginRight:2.0,
+      h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:12,
+      h2Font:'黑体',h2Size:14,h2SpaceBefore:12,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:10,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
+  { id:'zju', name:'浙江大学', dept:'通用格式', type:'博士',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
+      marginTop:2.5,marginBottom:2.5,marginLeft:2.5,marginRight:2.5,
+      h1Font:'黑体',h1Size:22,h1SpaceBefore:24,h1SpaceAfter:12,
+      h2Font:'黑体',h2Size:16,h2SpaceBefore:12,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:15,h3SpaceBefore:10,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
+  { id:'generic', name:'通用格式', dept:'适用大多数高校', type:'本/研',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
+      marginTop:2.5,marginBottom:2.5,marginLeft:3.0,marginRight:2.5,
+      h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:12,
+      h2Font:'黑体',h2Size:14,h2SpaceBefore:18,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:12,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
+];
+
+const FIELDS = [
+  { section:'正文格式', fields:[
+    { key:'bodyFont',label:'正文中文字体',type:'select',options:['宋体','黑体','楷体','仿宋'] },
+    { key:'bodyFontEn',label:'正文英文字体',type:'select',options:['Times New Roman','Arial','Calibri'] },
+    { key:'bodySize',label:'正文字号 (pt)',type:'number' },
+    { key:'lineSpacing',label:'行距 (倍)',type:'number' },
+  ]},
+  { section:'页面边距', fields:[
+    { key:'marginTop',label:'上边距 (cm)',type:'number' },
+    { key:'marginBottom',label:'下边距 (cm)',type:'number' },
+    { key:'marginLeft',label:'左边距 (cm)',type:'number' },
+    { key:'marginRight',label:'右边距 (cm)',type:'number' },
+  ]},
+  { section:'章标题（一级）', fields:[
+    { key:'h1Font',label:'字体',type:'select',options:['黑体','宋体','楷体'] },
+    { key:'h1Size',label:'字号 (pt)',type:'number' },
+    { key:'h1SpaceBefore',label:'段前 (pt)',type:'number' },
+    { key:'h1SpaceAfter',label:'段后 (pt)',type:'number' },
+  ]},
+  { section:'节标题（二级）', fields:[
+    { key:'h2Font',label:'字体',type:'select',options:['黑体','宋体','楷体'] },
+    { key:'h2Size',label:'字号 (pt)',type:'number' },
+    { key:'h2SpaceBefore',label:'段前 (pt)',type:'number' },
+    { key:'h2SpaceAfter',label:'段后 (pt)',type:'number' },
+  ]},
+  { section:'小节标题（三级）', fields:[
+    { key:'h3Font',label:'字体',type:'select',options:['黑体','宋体','楷体'] },
+    { key:'h3Size',label:'字号 (pt)',type:'number' },
+    { key:'h3SpaceBefore',label:'段前 (pt)',type:'number' },
+  ]},
+  { section:'图表注', fields:[
+    { key:'captionFont',label:'字体',type:'select',options:['宋体','黑体','楷体'] },
+    { key:'captionSize',label:'字号 (pt)',type:'number' },
+  ]},
+];
+
+let sel = null, p = {}, blob = null;
+
+function initSchools() {
+  document.getElementById('school-grid').innerHTML = SCHOOLS.map(s => `
+    <div class="school-card" id="sc-${s.id}" onclick="pickSchool('${s.id}')">
+      <div class="school-name">${s.name}</div>
+      <div class="school-sub">${s.dept}</div>
+      <span class="school-badge">${s.type}</span>
+    </div>`).join('');
+}
+
+function pickSchool(id) {
+  document.querySelectorAll('.school-card').forEach(e => e.classList.remove('selected'));
+  document.getElementById('sc-'+id).classList.add('selected');
+  sel = SCHOOLS.find(s => s.id === id);
+  document.getElementById('btn-to2').disabled = false;
+}
+
+function setStep(n) {
+  [1,2,3,4].forEach(i => {
+    document.getElementById('page'+i).classList.toggle('hidden', i!==n);
+    const el = document.getElementById('s'+i);
+    el.classList.remove('active','done');
+    if(i<n) el.classList.add('done');
+    else if(i===n) el.classList.add('active');
+  });
+  window.scrollTo(0,0);
+}
+
+function goTo1() { setStep(1); blob = null; }
+
+function goTo2() {
+  if(!sel) return;
+  p = Object.assign({}, sel.params);
+  document.getElementById('edit-title').textContent = sel.name + ' · ' + sel.dept + ' · ' + sel.type + ' · 格式参数';
+  document.getElementById('edit-fields').innerHTML = FIELDS.map(sec => `
+    <div class="edit-section">
+      <div class="edit-section-title">${sec.section}</div>
+      <div class="edit-grid">${sec.fields.map(f => `
+        <div class="edit-field">
+          <label>${f.label}</label>
+          ${f.type==='select'
+            ? `<select id="ef-${f.key}">${f.options.map(o=>`<option value="${o}"${p[f.key]===o?' selected':''}>${o}</option>`).join('')}</select>`
+            : `<input type="number" id="ef-${f.key}" value="${p[f.key]}" step="0.1" min="0">`}
+        </div>`).join('')}
+      </div>
+    </div>`).join('');
+  setStep(2);
+}
+
+function readFields() {
+  FIELDS.forEach(sec => sec.fields.forEach(f => {
+    const el = document.getElementById('ef-'+f.key);
+    if(el) p[f.key] = f.type==='number' ? parseFloat(el.value) : el.value;
+  }));
+}
+
+function goTo3() {
+  readFields();
+  const h1s = p.h1Size+'px', h2s = p.h2Size+'px', h3s = p.h3Size+'px';
+  const bs = p.bodySize+'px', lh = p.lineSpacing*1.6;
+  const school = sel ? sel.name : '';
+  const type = sel ? sel.type+'学位论文' : '';
+  document.getElementById('preview-paper').innerHTML = `
+    <div class="preview-meta">${school} — ${type}</div>
+    <div style="font-size:${h1s};font-family:'${p.h1Font}',sans-serif;font-weight:700;text-align:center;margin:${p.h1SpaceBefore}px 0 ${p.h1SpaceAfter}px">第1章　绪　论</div>
+    <div style="font-size:${h2s};font-family:'${p.h2Font}',sans-serif;font-weight:700;margin:${p.h2SpaceBefore}px 0 ${p.h2SpaceAfter}px">1.1　研究背景</div>
+    <p class="preview-body-text" style="font-size:${bs};font-family:'${p.bodyFont}',serif;line-height:${lh}">在信息技术高速发展的背景下，学术写作工具的自动化与智能化已成为重要研究方向。本文针对高校毕业论文格式繁琐、易出错的痛点，提出一种高效的格式自动生成方案。</p>
+    <div style="font-size:${h3s};font-family:'${p.h3Font}',sans-serif;font-weight:700;margin:${p.h3SpaceBefore}px 0 4px">1.1.1　国内研究现状</div>
+    <p class="preview-body-text" style="font-size:${bs};font-family:'${p.bodyFont}',serif;line-height:${lh}">国内学者在该领域已开展大量研究工作，取得了一系列重要成果，为本研究奠定了坚实基础。</p>
+    <div style="font-size:${h2s};font-family:'${p.h2Font}',sans-serif;font-weight:700;margin:${p.h2SpaceBefore}px 0 ${p.h2SpaceAfter}px">1.2　研究意义</div>
+    <p class="preview-body-text" style="font-size:${bs};font-family:'${p.bodyFont}',serif;line-height:${lh}">本研究的理论意义在于丰富了该领域的研究成果；实践意义在于为在校学生提供了便捷高效的论文格式辅助工具。</p>
+    <div class="preview-foot">— 1 —</div>`;
+  setStep(3);
+}
+
+function goTo4() {
+  setStep(4);
+  document.getElementById('gen-loading').classList.remove('hidden');
+  document.getElementById('gen-done').classList.add('hidden');
+  document.getElementById('usage-card').classList.add('hidden');
+  setTimeout(async () => {
+    try {
+      blob = await buildDocx();
+      doDownload();
+      document.getElementById('gen-loading').classList.add('hidden');
+      document.getElementById('gen-done').classList.remove('hidden');
+      document.getElementById('usage-card').classList.remove('hidden');
+      document.getElementById('done-desc').textContent = (sel?sel.name:'') + ' ' + (sel?sel.type:'') + '论文模板已下载，包含完整章节结构与精确格式设置。';
+    } catch(e) {
+      alert('生成失败：'+e.message);
+      setStep(3);
+    }
+  }, 80);
+}
+
+function redownload() { if(blob) doDownload(); }
+function doDownload() {
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = (sel?sel.name:'高校')+'_论文模板.docx';
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+// ===== 生成 DOCX =====
+function c2t(cm){return Math.round(cm*567)}
+function p2h(pt){return Math.round(pt*2)}
+function p2t(pt){return Math.round(pt*20)}
+
+async function buildDocx() {
+  const D = docx, A = D.AlignmentType, BLK = '000000';
+  const q = p; // 当前参数
+
+  const line = () => ({ line:Math.round(q.lineSpacing*240), lineRule:D.LineRuleType.AUTO });
+
+  function run(text, opts={}) {
+    return new D.TextRun({ text, font:{name:opts.font||q.bodyFont}, size:p2h(opts.size||q.bodySize), bold:opts.bold||false, color:BLK });
+  }
+  function body(text, opts={}) {
+    return new D.Paragraph({
+      children:[run(text,{font:opts.font,size:opts.size,bold:opts.bold})],
+      alignment: opts.align!==undefined ? opts.align : A.JUSTIFIED,
+      indent: opts.noIndent ? undefined : {firstLine:p2t(q.bodySize*2)},
+      spacing:{...line(), before:p2t(opts.sb||0), after:p2t(opts.sa||0)},
+      style: opts.style||undefined,
+    });
+  }
+  function ph(text) {
+    return new D.Paragraph({
+      children:[new D.TextRun({text:`【${text}】`,font:{name:q.bodyFont},size:p2h(q.bodySize),color:'AAAAAA'})],
+      indent:{firstLine:p2t(q.bodySize*2)},
+      spacing:{...line()},
+    });
+  }
+  function h1(text){ return new D.Paragraph({ children:[new D.TextRun({text,font:{name:q.h1Font},size:p2h(q.h1Size),bold:true,color:BLK})], alignment:A.CENTER, spacing:{...line(),before:p2t(q.h1SpaceBefore),after:p2t(q.h1SpaceAfter)}, style:'Heading1' }); }
+  function h2(text){ return new D.Paragraph({ children:[new D.TextRun({text,font:{name:q.h2Font},size:p2h(q.h2Size),bold:true,color:BLK})], alignment:A.LEFT, spacing:{...line(),before:p2t(q.h2SpaceBefore),after:p2t(q.h2SpaceAfter)}, style:'Heading2' }); }
+  function h3(text){ return new D.Paragraph({ children:[new D.TextRun({text,font:{name:q.h3Font},size:p2h(q.h3Size),bold:true,color:BLK})], alignment:A.LEFT, spacing:{...line(),before:p2t(q.h3SpaceBefore||10),after:p2t(q.h3SpaceAfter||0)}, style:'Heading3' }); }
+  function cap(text){ return new D.Paragraph({ children:[new D.TextRun({text,font:{name:q.captionFont},size:p2h(q.captionSize),bold:true,color:BLK})], alignment:A.CENTER, spacing:{before:p2t(6),after:p2t(6)} }); }
+  function empty(){ return new D.Paragraph({children:[new D.TextRun({text:'',font:{name:q.bodyFont},size:p2h(q.bodySize)})]}); }
+  function pb(){ return new D.Paragraph({children:[new D.PageBreak()]}); }
+  function ctr(text,sz,bold,font){ return new D.Paragraph({ children:[new D.TextRun({text,font:{name:font||q.bodyFont},size:p2h(sz),bold:bold||false,color:BLK})], alignment:A.CENTER, spacing:{...line(),after:p2t(8)} }); }
+  function fill(label,hint,sz){ return new D.Paragraph({ children:[new D.TextRun({text:label,font:{name:q.bodyFont},size:p2h(sz||q.bodySize),color:BLK}),new D.TextRun({text:hint,font:{name:q.bodyFont},size:p2h(sz||q.bodySize),color:'AAAAAA'})], alignment:A.CENTER, spacing:{...line(),after:p2t(8)} }); }
+
+  const schoolName = sel?sel.name:'学校名称';
+  const thesisType = sel?(sel.type+'学位论文'):'学位论文';
+  const bm = {top:c2t(q.marginTop),bottom:c2t(q.marginBottom),left:c2t(q.marginLeft),right:c2t(q.marginRight),header:c2t(2.2),footer:c2t(2.2)};
+  const nm = {top:c2t(2.54),bottom:c2t(2.54),left:c2t(3.18),right:c2t(3.18),header:c2t(2.2),footer:c2t(2.2)};
+
+  function mkHeader(text){ return new D.Header({children:[new D.Paragraph({ children:[new D.TextRun({text,font:{name:q.headerFont},size:p2h(q.headerSize),color:BLK})], alignment:A.CENTER, border:{bottom:{color:BLK,space:1,style:D.BorderStyle.SINGLE,size:6}} })]}); }
+  function mkFooter(){ return new D.Footer({children:[new D.Paragraph({ children:[new D.TextRun({children:[D.PageNumber.CURRENT],font:{name:'Times New Roman'},size:p2h(9),color:BLK})], alignment:A.CENTER })]}); }
+
+  return await D.Packer.toBlob(new D.Document({
+    creator:schoolName, title:thesisType,
+    sections:[
+      { properties:{page:{margin:nm,size:{width:11906,height:16838}}},
+        children:[
+          empty(),empty(),empty(),
+          ctr(schoolName,22,true,q.h1Font), ctr(thesisType,18,true,q.h1Font),
+          empty(),empty(),
+          fill('论文题目：','（请填写论文题目）',14), empty(),
+          fill('学　　院：','（请填写学院名称）'),
+          fill('专　　业：','（请填写专业名称）'),
+          fill('学　　号：','（请填写学号）'),
+          fill('姓　　名：','（请填写姓名）'),
+          fill('指导教师：','（请填写导师姓名及职称）'),
+          empty(),empty(),
+          ctr('提交日期：        年    月    日',q.bodySize),
+          pb(),
+          ctr('学位论文原创性声明',16,true,q.h1Font), empty(),
+          body('本人呈交的学位论文是本人在导师指导下，独立完成的研究成果。本人在论文写作中参考其他个人或集体已经发表的研究成果，均在文中以适当方式明确标明，并符合法律规范和相关学术规范。'),
+          empty(),
+          body('声明人（签名）：                                    年    月    日',{align:A.RIGHT,noIndent:true}),
+          pb(),
+          ctr('答辩委员会名单',16,true,q.h1Font), empty(),
+          body('答辩日期：        年    月    日'), empty(),
+          body('答辩委员会主席：'), empty(),
+          body('答辩委员会成员：（请填写成员名单）'),
+          pb(),
+        ]
+      },
+      { properties:{page:{margin:bm,size:{width:11906,height:16838}},pageNumberStart:1,pageNumberFormatType:D.NumberFormat.UPPER_ROMAN},
+        headers:{default:mkHeader(thesisType),even:mkHeader(thesisType)},
+        footers:{default:mkFooter()},
+        children:[
+          h1('摘　要'), empty(),
+          ph('在此填写中文摘要，300-500字。概述研究背景、目的、方法、主要结果及结论。'),
+          empty(),
+          new D.Paragraph({ children:[new D.TextRun({text:'关键词：',font:{name:q.bodyFont},size:p2h(q.bodySize),bold:true,color:BLK}),new D.TextRun({text:'关键词1；关键词2；关键词3；关键词4',font:{name:q.bodyFont},size:p2h(q.bodySize),color:'AAAAAA'})], spacing:{...line()} }),
+          pb(),
+          h1('ABSTRACT'), empty(),
+          new D.Paragraph({ children:[new D.TextRun({text:'（Please enter the English abstract here, 300-500 words.）',font:{name:q.bodyFontEn},size:p2h(q.bodySize),color:'AAAAAA'})], indent:{firstLine:p2t(q.bodySize*2)}, spacing:{...line()} }),
+          empty(),
+          new D.Paragraph({ children:[new D.TextRun({text:'Keywords: ',font:{name:q.bodyFontEn},size:p2h(q.bodySize),bold:true,color:BLK}),new D.TextRun({text:'keyword1; keyword2; keyword3; keyword4',font:{name:q.bodyFontEn},size:p2h(q.bodySize),color:'AAAAAA'})], spacing:{...line()} }),
+          pb(),
+          h1('目　录'), empty(),
+          new D.TableOfContents('目录',{hyperlink:true,headingStyleRange:'1-3',stylesWithLevels:[new D.StyleLevel('Heading1',1),new D.StyleLevel('Heading2',2),new D.StyleLevel('Heading3',3)]}),
+          pb(),
+        ]
+      },
+      { properties:{page:{margin:bm,size:{width:11906,height:16838}},pageNumberStart:1,pageNumberFormatType:D.NumberFormat.DECIMAL},
+        headers:{default:mkHeader('第1章　绪论'),even:mkHeader(thesisType)},
+        footers:{default:mkFooter()},
+        children:[
+          h1('第1章　绪　论'),
+          h2('1.1　研究背景'), body('（请在此填写研究背景内容，阐述研究的时代背景、领域现状以及相关政策或技术发展趋势。）'),
+          h3('1.1.1　国内研究现状'), body('（请在此填写国内相关研究的综述内容。）'),
+          h3('1.1.2　国外研究现状'), body('（请在此填写国外相关研究的综述内容。）'),
+          h2('1.2　研究意义'), body('（请在此填写研究的理论意义和实践意义。）'),
+          h2('1.3　研究内容与方法'), body('（请在此简述本研究的核心研究内容、采用的研究方法和技术路线。）'),
+          h2('1.4　论文结构安排'),
+          body('本文共分为五章，各章内容安排如下：'),
+          body('第1章为绪论，介绍研究背景、意义及论文结构。'),
+          body('第2章综述相关工作，分析现有研究的不足。'),
+          body('第3章详述本文的研究方法与技术路线。'),
+          body('第4章开展实验并对结果进行分析讨论。'),
+          body('第5章总结全文，展望未来研究方向。'),
+          pb(),
+          h1('第2章　相关工作'),
+          h2('2.1　相关理论基础'), body('（请在此填写与本研究密切相关的理论基础与概念定义。）'),
+          cap('表2.1　相关方法对比'), body('（在此插入表格，表题在表格上方）',{noIndent:true}), empty(),
+          cap('图2.1　系统框架图'), body('（在此插入图片，图题在图片下方）',{noIndent:true}),
+          h2('2.2　相关技术综述'), body('（请在此综述与本研究相关的已有技术方案、算法或模型。）'),
+          h2('2.3　本章小结'), body('（概括本章内容，说明相关工作对本研究的启示。）'),
+          pb(),
+          h1('第3章　研究方法'),
+          h2('3.1　总体方案设计'), body('（描述本研究的总体技术路线、系统框架或实验设计。）'),
+          h2('3.2　核心方法详述'),
+          h3('3.2.1　方法一'), body('（详细描述具体方法、模型或算法。）'),
+          h3('3.2.2　方法二'), body('（详细描述具体方法、模型或算法。）'),
+          h2('3.3　本章小结'), body('（概括本章提出的方法与方案。）'),
+          pb(),
+          h1('第4章　实验与分析'),
+          h2('4.1　实验设置'),
+          h3('4.1.1　数据集'), body('（描述实验所用数据集的来源、规模和预处理方式。）'),
+          h3('4.1.2　实验环境'), body('（描述硬件环境、软件框架和超参数设置。）'),
+          h2('4.2　实验结果'),
+          cap('表4.1　实验结果对比'), body('（在此插入实验结果表格。）',{noIndent:true}), empty(),
+          cap('图4.1　实验结果对比图'), body('（在此插入实验结果图。）',{noIndent:true}),
+          h2('4.3　结果分析与讨论'), body('（对实验结果进行深入分析，与基线方法对比，解释结果的原因。）'),
+          h2('4.4　本章小结'), body('（概括本章实验结论。）'),
+          pb(),
+          h1('第5章　总结与展望'),
+          h2('5.1　工作总结'), body('（总结本文的主要研究内容和创新点。）'),
+          h2('5.2　研究展望'), body('（指出本研究的不足之处，展望未来可以继续深入研究的方向。）'),
+          pb(),
+          h1('参考文献'), empty(),
+          new D.Paragraph({ children:[new D.TextRun({text:'[1]（作者）.（文章标题）[J].（期刊名）,（年份）,（卷）(（期）):(起始页-终止页).',font:{name:q.bodyFont},size:p2h(q.bodySize),color:BLK})], spacing:{...line(),after:p2t(4)}, indent:{hanging:p2t(q.bodySize*2)} }),
+          new D.Paragraph({ children:[new D.TextRun({text:'[2]（作者）.（书名）[M].（出版地）:（出版社）,（年份）.',font:{name:q.bodyFont},size:p2h(q.bodySize),color:BLK})], spacing:{...line(),after:p2t(4)}, indent:{hanging:p2t(q.bodySize*2)} }),
+          new D.Paragraph({ children:[new D.TextRun({text:'[3]（按照GB/T 7714格式继续添加）',font:{name:q.bodyFont},size:p2h(q.bodySize),color:'AAAAAA'})], spacing:{...line()} }),
+          pb(),
+          h1('致　谢'), empty(),
+          ph('在此填写致谢内容，感谢导师、同学、家人等在论文研究过程中给予的帮助与支持，通常300-500字。'),
+        ]
+      }
+    ]
+  }));
+}
+
+initSchools();
+</script>
+</body>
+</html>
