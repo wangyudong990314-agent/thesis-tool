@@ -3,1209 +3,651 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>毕业论文格式生成器</title>
+<title>厦门大学论文格式生成器</title>
 <script src="https://cdn.jsdelivr.net/npm/docx@8.5.0/build/index.umd.js"></script>
 <style>
-  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-
-  body {
-    font-family: var(--font-sans, 'Helvetica Neue', Arial, sans-serif);
-    background: var(--color-background-tertiary, #f5f4f0);
-    color: var(--color-text-primary, #1a1a18);
-    min-height: 100vh;
-    padding: 2rem 1rem;
-  }
-
-  .app {
-    max-width: 860px;
-    margin: 0 auto;
-  }
-
-  .header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-
-  .header-badge {
-    display: inline-block;
-    font-size: 11px;
-    font-weight: 500;
-    letter-spacing: 0.08em;
-    text-transform: uppercase;
-    color: var(--color-text-info, #185FA5);
-    background: var(--color-background-info, #E6F1FB);
-    padding: 4px 12px;
-    border-radius: var(--border-radius-md, 8px);
-    margin-bottom: 1rem;
-  }
-
-  .header h1 {
-    font-size: 26px;
-    font-weight: 500;
-    color: var(--color-text-primary);
-    margin-bottom: 0.5rem;
-  }
-
-  .header p {
-    font-size: 14px;
-    color: var(--color-text-secondary, #666);
-    line-height: 1.6;
-  }
-
-  .steps-nav {
-    display: flex;
-    align-items: center;
-    gap: 0;
-    margin-bottom: 2rem;
-    background: var(--color-background-primary, #fff);
-    border: 0.5px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-lg, 12px);
-    padding: 0.5rem;
-    overflow: hidden;
-  }
-
-  .step-item {
-    flex: 1;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.6rem 1rem;
-    border-radius: var(--border-radius-md, 8px);
-    cursor: default;
-    transition: background 0.15s;
-  }
-
-  .step-item.active {
-    background: var(--color-background-secondary, #f0efe8);
-  }
-
-  .step-num {
-    width: 22px;
-    height: 22px;
-    border-radius: 50%;
-    background: var(--color-background-tertiary);
-    border: 0.5px solid var(--color-border-secondary);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 11px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    flex-shrink: 0;
-  }
-
-  .step-item.active .step-num {
-    background: var(--color-text-primary);
-    border-color: var(--color-text-primary);
-    color: var(--color-background-primary);
-  }
-
-  .step-item.done .step-num {
-    background: #1D9E75;
-    border-color: #1D9E75;
-    color: #fff;
-  }
-
-  .step-label { font-size: 13px; font-weight: 500; }
-  .step-item:not(.active) .step-label { color: var(--color-text-secondary); }
-
-  .card {
-    background: var(--color-background-primary, #fff);
-    border: 0.5px solid var(--color-border-tertiary);
-    border-radius: var(--border-radius-lg, 12px);
-    padding: 1.5rem;
-    margin-bottom: 1rem;
-  }
-
-  .card-title {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--color-text-secondary);
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    margin-bottom: 1rem;
-  }
-
-  label { font-size: 13px; font-weight: 500; color: var(--color-text-secondary); display: block; margin-bottom: 6px; }
-
-  input[type="text"], textarea, select {
-    width: 100%;
-    padding: 0.5rem 0.75rem;
-    border: 0.5px solid var(--color-border-secondary);
-    border-radius: var(--border-radius-md);
-    font-size: 14px;
-    font-family: inherit;
-    background: var(--color-background-primary);
-    color: var(--color-text-primary);
-    outline: none;
-    transition: border-color 0.15s;
-  }
-
-  input[type="text"]:focus, textarea:focus, select:focus {
-    border-color: var(--color-border-primary);
-  }
-
-  textarea { resize: vertical; min-height: 140px; line-height: 1.6; }
-
-  .field-row { margin-bottom: 1rem; }
-  .field-row:last-child { margin-bottom: 0; }
-
-  .presets {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 1rem;
-  }
-
-  .preset-btn {
-    padding: 4px 12px;
-    border: 0.5px solid var(--color-border-secondary);
-    border-radius: 100px;
-    background: var(--color-background-secondary);
-    font-size: 12px;
-    cursor: pointer;
-    color: var(--color-text-secondary);
-    transition: all 0.12s;
-  }
-
-  .preset-btn:hover {
-    background: var(--color-background-primary);
-    border-color: var(--color-border-primary);
-    color: var(--color-text-primary);
-  }
-
-  .btn-primary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.6rem 1.25rem;
-    background: var(--color-text-primary);
-    color: var(--color-background-primary);
-    border: none;
-    border-radius: var(--border-radius-md);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: opacity 0.15s;
-  }
-
-  .btn-primary:hover { opacity: 0.85; }
-  .btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
-
-  .btn-secondary {
-    display: inline-flex;
-    align-items: center;
-    gap: 8px;
-    padding: 0.6rem 1.25rem;
-    background: transparent;
-    color: var(--color-text-primary);
-    border: 0.5px solid var(--color-border-secondary);
-    border-radius: var(--border-radius-md);
-    font-size: 14px;
-    font-weight: 500;
-    cursor: pointer;
-    font-family: inherit;
-    transition: background 0.12s;
-  }
-
-  .btn-secondary:hover { background: var(--color-background-secondary); }
-
-  .btn-row {
-    display: flex;
-    gap: 8px;
-    flex-wrap: wrap;
-    margin-top: 1.25rem;
-  }
-
-  .loading-bar {
-    height: 3px;
-    background: var(--color-background-secondary);
-    border-radius: 2px;
-    overflow: hidden;
-    margin: 1rem 0;
-  }
-
-  .loading-bar-inner {
-    height: 100%;
-    width: 0%;
-    background: var(--color-text-primary);
-    border-radius: 2px;
-    transition: width 0.4s ease;
-    animation: load-pulse 1.5s infinite;
-  }
-
-  @keyframes load-pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-  }
-
-  .status-text {
-    font-size: 13px;
-    color: var(--color-text-secondary);
-    margin-top: 0.5rem;
-  }
-
-  .format-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 12px;
-  }
-
-  @media (max-width: 600px) {
-    .format-grid { grid-template-columns: 1fr; }
-  }
-
-  .format-card {
-    background: var(--color-background-secondary);
-    border-radius: var(--border-radius-md);
-    padding: 0.875rem 1rem;
-  }
-
-  .format-card-title {
-    font-size: 11px;
-    font-weight: 500;
-    text-transform: uppercase;
-    letter-spacing: 0.06em;
-    color: var(--color-text-secondary);
-    margin-bottom: 8px;
-  }
-
-  .format-row {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 3px 0;
-    font-size: 13px;
-    border-bottom: 0.5px solid var(--color-border-tertiary);
-  }
-
-  .format-row:last-child { border-bottom: none; }
-
-  .format-key { color: var(--color-text-secondary); }
-  .format-val { font-weight: 500; color: var(--color-text-primary); }
-
-  .preview-doc {
-    background: #fff;
-    border: 0.5px solid var(--color-border-secondary);
-    border-radius: var(--border-radius-md);
-    padding: 2rem 2.5rem;
-    font-family: 'Songti SC', 'SimSun', serif;
-    color: #000;
-    min-height: 300px;
-    box-shadow: 0 1px 4px rgba(0,0,0,0.06);
-  }
-
-  .preview-chapter {
-    font-size: 16px;
-    font-weight: 700;
-    text-align: center;
-    margin: 1.5rem 0 0.75rem;
-    font-family: 'Heiti SC', 'SimHei', sans-serif;
-  }
-
-  .preview-section {
-    font-size: 14px;
-    font-weight: 700;
-    margin: 1rem 0 0.5rem;
-    font-family: 'Heiti SC', 'SimHei', sans-serif;
-  }
-
-  .preview-subsection {
-    font-size: 13px;
-    font-weight: 700;
-    margin: 0.75rem 0 0.4rem;
-    font-family: 'Heiti SC', 'SimHei', sans-serif;
-  }
-
-  .preview-body {
-    font-size: 12px;
-    line-height: 1.8;
-    color: #333;
-    text-indent: 2em;
-    margin-bottom: 0.5rem;
-  }
-
-  .section-title-bar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    margin-bottom: 1rem;
-  }
-
-  .section-title-bar h2 {
-    font-size: 15px;
-    font-weight: 500;
-  }
-
-  .tab-bar {
-    display: flex;
-    gap: 4px;
-    background: var(--color-background-secondary);
-    border-radius: var(--border-radius-md);
-    padding: 3px;
-  }
-
-  .tab {
-    padding: 4px 12px;
-    font-size: 12px;
-    font-weight: 500;
-    border-radius: 5px;
-    cursor: pointer;
-    color: var(--color-text-secondary);
-    border: none;
-    background: transparent;
-    font-family: inherit;
-  }
-
-  .tab.active {
-    background: var(--color-background-primary);
-    color: var(--color-text-primary);
-    border: 0.5px solid var(--color-border-tertiary);
-  }
-
-  .success-banner {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    padding: 1rem 1.25rem;
-    background: var(--color-background-success, #EAF3DE);
-    border: 0.5px solid var(--color-border-success, #639922);
-    border-radius: var(--border-radius-md);
-    margin-bottom: 1rem;
-  }
-
-  .success-icon {
-    width: 24px;
-    height: 24px;
-    border-radius: 50%;
-    background: #1D9E75;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-  }
-
-  .success-icon svg { width: 12px; height: 12px; }
-
-  .success-text { font-size: 13px; color: var(--color-text-success, #3B6D11); }
-
-  .edit-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
-  @media (max-width: 600px) { .edit-grid { grid-template-columns: repeat(2, 1fr); } }
-
-  .edit-field label { font-size: 11px; margin-bottom: 4px; }
-  .edit-field input { padding: 0.4rem 0.6rem; font-size: 13px; }
-
-  .hidden { display: none !important; }
-
-  .spinner {
-    display: inline-block;
-    width: 14px;
-    height: 14px;
-    border: 2px solid transparent;
-    border-top-color: currentColor;
-    border-radius: 50%;
-    animation: spin 0.7s linear infinite;
-  }
-
-  @keyframes spin { to { transform: rotate(360deg); } }
-
-  .divider {
-    border: none;
-    border-top: 0.5px solid var(--color-border-tertiary);
-    margin: 1.25rem 0;
-  }
-
-  .template-chapters {
-    margin-top: 1rem;
-  }
-
-  .chapter-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 6px 0;
-    border-bottom: 0.5px solid var(--color-border-tertiary);
-    font-size: 13px;
-  }
-
-  .chapter-item:last-child { border-bottom: none; }
-
-  .chapter-tag {
-    font-size: 10px;
-    padding: 2px 6px;
-    border-radius: 3px;
-    font-weight: 500;
-    background: var(--color-background-info);
-    color: var(--color-text-info);
-    flex-shrink: 0;
-  }
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+body {
+  font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: #f5f4f0;
+  color: #1a1a18;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+.app { max-width: 780px; margin: 0 auto; }
+.header { text-align: center; margin-bottom: 2rem; }
+.badge {
+  display: inline-block; font-size: 11px; font-weight: 500;
+  letter-spacing: 0.07em; text-transform: uppercase;
+  color: #185FA5; background: #E6F1FB;
+  padding: 4px 12px; border-radius: 8px; margin-bottom: 1rem;
+}
+.header h1 { font-size: 24px; font-weight: 500; color: #1a1a18; margin-bottom: 0.4rem; }
+.header p { font-size: 13px; color: #666; }
+.card {
+  background: #fff; border: 0.5px solid rgba(0,0,0,0.12);
+  border-radius: 12px; padding: 1.25rem 1.5rem; margin-bottom: 1rem;
+}
+.card-title {
+  font-size: 11px; font-weight: 500; text-transform: uppercase;
+  letter-spacing: 0.07em; color: #666; margin-bottom: 1rem;
+}
+.format-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+@media (max-width: 560px) { .format-grid { grid-template-columns: 1fr; } }
+.format-block { background: #f5f4f0; border-radius: 8px; padding: 0.75rem 1rem; }
+.format-block-title { font-size: 10px; font-weight: 500; text-transform: uppercase; letter-spacing: 0.06em; color: #888; margin-bottom: 6px; }
+.format-row { display: flex; justify-content: space-between; padding: 3px 0; font-size: 12px; border-bottom: 0.5px solid rgba(0,0,0,0.06); }
+.format-row:last-child { border-bottom: none; }
+.fk { color: #666; }
+.fv { font-weight: 500; color: #1a1a18; }
+.btn {
+  display: inline-flex; align-items: center; gap: 8px;
+  padding: 0.6rem 1.25rem; border-radius: 8px;
+  font-size: 14px; font-weight: 500; cursor: pointer;
+  font-family: inherit; transition: opacity 0.15s;
+  border: none;
+}
+.btn-primary { background: #1a1a18; color: #fff; }
+.btn-primary:hover { opacity: 0.85; }
+.btn-primary:disabled { opacity: 0.4; cursor: not-allowed; }
+.btn-secondary { background: transparent; color: #1a1a18; border: 0.5px solid rgba(0,0,0,0.25); }
+.btn-secondary:hover { background: #f5f4f0; }
+.btn-row { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 1rem; }
+.spinner {
+  display: inline-block; width: 14px; height: 14px;
+  border: 2px solid transparent; border-top-color: currentColor;
+  border-radius: 50%; animation: spin 0.7s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.success-wrap { text-align: center; padding: 2rem 1rem; }
+.success-icon {
+  width: 52px; height: 52px; border-radius: 50%;
+  background: #EAF3DE; display: flex; align-items: center;
+  justify-content: center; margin: 0 auto 1rem;
+}
+.success-icon svg { width: 22px; height: 22px; }
+.success-wrap h2 { font-size: 18px; font-weight: 500; margin-bottom: 0.5rem; }
+.success-wrap p { font-size: 13px; color: #666; margin-bottom: 1.5rem; }
+.steps { display: flex; gap: 0; margin-bottom: 1.5rem; background: #fff; border: 0.5px solid rgba(0,0,0,0.12); border-radius: 12px; padding: 6px; }
+.step { flex: 1; display: flex; align-items: center; gap: 6px; padding: 6px 10px; border-radius: 8px; }
+.step.active { background: #f5f4f0; }
+.step-n {
+  width: 20px; height: 20px; border-radius: 50%; flex-shrink: 0;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 500;
+  background: #f5f4f0; border: 0.5px solid rgba(0,0,0,0.2); color: #666;
+}
+.step.active .step-n { background: #1a1a18; border-color: #1a1a18; color: #fff; }
+.step.done .step-n { background: #1D9E75; border-color: #1D9E75; color: #fff; }
+.step-label { font-size: 12px; font-weight: 500; color: #666; }
+.step.active .step-label { color: #1a1a18; }
+.note-box { font-size: 12px; color: #666; line-height: 1.8; }
+.note-box p { margin-bottom: 2px; }
+.hidden { display: none !important; }
+.tag { font-size: 10px; padding: 2px 6px; border-radius: 4px; font-weight: 500; background: #E6F1FB; color: #185FA5; }
+.chapter-list { margin-top: 0.75rem; }
+.chapter-row { display: flex; align-items: center; gap: 8px; padding: 5px 0; border-bottom: 0.5px solid rgba(0,0,0,0.06); font-size: 12px; }
+.chapter-row:last-child { border-bottom: none; }
 </style>
 </head>
 <body>
 <div class="app">
 
   <div class="header">
-    <div class="header-badge">AI 智能体 · 毕业论文工具</div>
-    <h1>高校毕业论文格式生成器</h1>
-    <p>输入学校格式要求，AI 自动解析并生成标准 Word 论文模板</p>
+    <div class="badge">厦门大学 · 电子学院</div>
+    <h1>研究生学位论文格式生成器</h1>
+    <p>按电子学院官方格式要求，一键生成标准 Word 模板</p>
   </div>
 
-  <div class="steps-nav">
-    <div class="step-item active" id="step1-nav">
-      <div class="step-num">1</div>
-      <span class="step-label">填写格式要求</span>
-    </div>
-    <div class="step-item" id="step2-nav">
-      <div class="step-num">2</div>
-      <span class="step-label">AI 解析预览</span>
-    </div>
-    <div class="step-item" id="step3-nav">
-      <div class="step-num">3</div>
-      <span class="step-label">生成 Word 模板</span>
-    </div>
+  <div class="steps">
+    <div class="step active" id="s1"><div class="step-n">1</div><span class="step-label">确认格式</span></div>
+    <div class="step" id="s2"><div class="step-n">2</div><span class="step-label">生成模板</span></div>
+    <div class="step" id="s3"><div class="step-n">3</div><span class="step-label">下载完成</span></div>
   </div>
 
-  <!-- Step 1: Input -->
+  <!-- Step 1 -->
   <div id="step1">
     <div class="card">
-      <div class="card-title">学校信息</div>
-      <div class="field-row">
-        <label>学校名称</label>
-        <input type="text" id="school-name" placeholder="例如：北京大学、浙江大学..." />
+      <div class="card-title">已内置格式参数 · 厦门大学电子学院研究生学位论文</div>
+      <div class="format-grid">
+        <div class="format-block">
+          <div class="format-block-title">页面设置</div>
+          <div class="format-row"><span class="fk">纸张</span><span class="fv">A4</span></div>
+          <div class="format-row"><span class="fk">普通页边距 上/下</span><span class="fv">2.54 cm</span></div>
+          <div class="format-row"><span class="fk">普通页边距 左/右</span><span class="fv">3.18 cm</span></div>
+          <div class="format-row"><span class="fk">正文页边距 上/下/左/右</span><span class="fv">3.0 cm</span></div>
+          <div class="format-row"><span class="fk">页眉页脚距边界</span><span class="fv">2.2 cm</span></div>
+        </div>
+        <div class="format-block">
+          <div class="format-block-title">正文格式</div>
+          <div class="format-row"><span class="fk">中文字体</span><span class="fv">宋体</span></div>
+          <div class="format-row"><span class="fk">英文字体</span><span class="fv">Times New Roman</span></div>
+          <div class="format-row"><span class="fk">字号</span><span class="fv">小四号（12pt）</span></div>
+          <div class="format-row"><span class="fk">行距</span><span class="fv">1.5 倍</span></div>
+          <div class="format-row"><span class="fk">对齐</span><span class="fv">两端对齐，首行缩进2字</span></div>
+        </div>
+        <div class="format-block">
+          <div class="format-block-title">标题格式</div>
+          <div class="format-row"><span class="fk">章标题</span><span class="fv">小三黑体加粗居中</span></div>
+          <div class="format-row"><span class="fk">章标题间距</span><span class="fv">段前24pt / 段后18pt</span></div>
+          <div class="format-row"><span class="fk">一级节标题</span><span class="fv">四号黑体加粗居左</span></div>
+          <div class="format-row"><span class="fk">二级节标题</span><span class="fv">小四黑体加粗居左</span></div>
+        </div>
+        <div class="format-block">
+          <div class="format-block-title">页眉页码</div>
+          <div class="format-row"><span class="fk">奇数页页眉</span><span class="fv">所在章标题</span></div>
+          <div class="format-row"><span class="fk">偶数页页眉</span><span class="fv">论文标题</span></div>
+          <div class="format-row"><span class="fk">页眉字体</span><span class="fv">宋体五号居中</span></div>
+          <div class="format-row"><span class="fk">摘要~目录页码</span><span class="fv">罗马数字 Ⅰ Ⅱ…</span></div>
+          <div class="format-row"><span class="fk">正文页码</span><span class="fv">阿拉伯数字连续编排</span></div>
+        </div>
       </div>
-      <div class="field-row">
-        <label>论文类型</label>
-        <select id="thesis-type">
-          <option value="本科毕业论文">本科毕业论文</option>
-          <option value="硕士学位论文">硕士学位论文</option>
-          <option value="博士学位论文">博士学位论文</option>
-        </select>
-      </div>
-    </div>
 
-    <div class="card">
-      <div class="card-title">格式要求</div>
-      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:0.75rem;">粘贴学校下发的格式说明，或从快捷模板选择，AI 会自动提取关键格式参数。</p>
-      <div class="presets">
-        <span style="font-size:12px;color:var(--color-text-secondary);padding-top:3px;">快捷模板：</span>
-        <button class="preset-btn" onclick="fillPreset('pku')">北京大学</button>
-        <button class="preset-btn" onclick="fillPreset('tsinghua')">清华大学</button>
-        <button class="preset-btn" onclick="fillPreset('zju')">浙江大学</button>
-        <button class="preset-btn" onclick="fillPreset('generic')">通用格式</button>
+      <div style="margin-top:1rem;">
+        <div class="card-title" style="margin-bottom:0.5rem;">模板章节结构</div>
+        <div class="chapter-list">
+          <div class="chapter-row"><span class="tag">封面</span>封面页（单面打印）</div>
+          <div class="chapter-row"><span class="tag">声明</span>学位论文原创性声明（单面打印）</div>
+          <div class="chapter-row"><span class="tag">答辩</span>答辩委员会名单（单面打印）</div>
+          <div class="chapter-row"><span class="tag">双面</span>中文摘要（页码 Ⅰ）</div>
+          <div class="chapter-row"><span class="tag">双面</span>英文 Abstract（页码 Ⅱ）</div>
+          <div class="chapter-row"><span class="tag">双面</span>目录（自动生成）</div>
+          <div class="chapter-row"><span class="tag">正文</span>第1章 绪论</div>
+          <div class="chapter-row"><span class="tag">正文</span>第2章 相关工作</div>
+          <div class="chapter-row"><span class="tag">正文</span>第3章 研究方法</div>
+          <div class="chapter-row"><span class="tag">正文</span>第4章 实验与分析</div>
+          <div class="chapter-row"><span class="tag">正文</span>第5章 总结与展望</div>
+          <div class="chapter-row"><span class="tag">结尾</span>参考文献</div>
+          <div class="chapter-row"><span class="tag">结尾</span>致谢</div>
+        </div>
       </div>
-      <div class="field-row">
-        <label>格式要求原文</label>
-        <textarea id="format-input" placeholder="粘贴学校格式说明文字，例如：
-• 正文字体：宋体小四号（12pt），行距1.5倍
-• 一级标题：黑体三号（16pt），居中，段前24pt
-• 二级标题：黑体四号（14pt），左对齐，段前18pt
-• 三级标题：黑体小四号（12pt），左对齐
-• 页边距：上3cm、下2.5cm、左3cm、右2.5cm
-• 页码：居中，宋体小五号"></textarea>
-      </div>
+
       <div class="btn-row">
-        <button class="btn-primary" id="analyze-btn" onclick="analyzeFormat()">
-          <span>AI 解析格式</span>
-          <span style="font-size:12px;opacity:0.7;">↗</span>
-        </button>
-      </div>
-      <div id="analyze-status" class="hidden">
-        <div class="loading-bar" style="margin-top:1rem;">
-          <div class="loading-bar-inner" id="load-bar" style="width:60%"></div>
-        </div>
-        <div class="status-text" id="status-msg">正在解析格式要求…</div>
+        <button class="btn btn-primary" id="gen-btn" onclick="generate()">生成 Word 模板</button>
       </div>
     </div>
   </div>
 
-  <!-- Step 2: Preview & Edit -->
+  <!-- Step 2 (loading) -->
   <div id="step2" class="hidden">
-    <div class="success-banner">
-      <div class="success-icon">
-        <svg viewBox="0 0 12 12" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M2 6l3 3 5-5" stroke="white" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <div class="success-text">
-        <span id="school-display" style="font-weight:500;">格式解析完成</span>，已提取 <span id="param-count">12</span> 项格式参数
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="section-title-bar">
-        <h2>格式参数</h2>
-        <div class="tab-bar">
-          <button class="tab active" id="tab-overview" onclick="switchTab('overview')">总览</button>
-          <button class="tab" id="tab-edit" onclick="switchTab('edit')">编辑</button>
-          <button class="tab" id="tab-preview" onclick="switchTab('preview')">预览</button>
-        </div>
-      </div>
-
-      <div id="tab-content-overview">
-        <div class="format-grid" id="format-overview"></div>
-      </div>
-
-      <div id="tab-content-edit" class="hidden">
-        <div class="edit-grid" id="format-edit-fields"></div>
-      </div>
-
-      <div id="tab-content-preview" class="hidden">
-        <p style="font-size:12px;color:var(--color-text-secondary);margin-bottom:0.75rem;">以下为按解析格式样式渲染的论文结构预览</p>
-        <div class="preview-doc" id="doc-preview"></div>
-      </div>
-    </div>
-
-    <div class="card">
-      <div class="card-title">模板章节结构</div>
-      <p style="font-size:13px;color:var(--color-text-secondary);">生成的 Word 模板将包含以下章节骨架，可在下载后自行增删。</p>
-      <div class="template-chapters" id="chapters-list"></div>
-    </div>
-
-    <div class="btn-row">
-      <button class="btn-primary" id="gen-btn" onclick="generateDocx()">
-        <span>生成 Word 模板</span>
-      </button>
-      <button class="btn-secondary" onclick="backToStep1()">重新输入</button>
-    </div>
-
-    <div id="gen-status" class="hidden">
-      <div class="loading-bar" style="margin-top:1rem;">
-        <div class="loading-bar-inner" style="width:80%"></div>
-      </div>
-      <div class="status-text">正在生成 .docx 文件…</div>
+    <div class="card" style="text-align:center;padding:2rem;">
+      <div style="margin-bottom:1rem;"><span class="spinner" style="width:24px;height:24px;border-width:3px;"></span></div>
+      <p style="font-size:14px;color:#666;">正在生成 .docx 文件，请稍候…</p>
     </div>
   </div>
 
-  <!-- Step 3: Done -->
+  <!-- Step 3 (done) -->
   <div id="step3" class="hidden">
-    <div class="card" style="text-align:center;padding:2.5rem 1.5rem;">
-      <div style="width:52px;height:52px;border-radius:50%;background:#EAF3DE;display:flex;align-items:center;justify-content:center;margin:0 auto 1rem;">
-        <svg width="22" height="22" viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
-          <path d="M4 11l5 5 9-9" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
-        </svg>
-      </div>
-      <h2 style="font-size:18px;font-weight:500;margin-bottom:0.5rem;">Word 模板已生成</h2>
-      <p style="font-size:13px;color:var(--color-text-secondary);margin-bottom:1.5rem;" id="download-desc">按 <span id="school-done"></span> 格式生成的论文模板已准备就绪，包含完整章节结构与样式设置。</p>
-      <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
-        <button class="btn-primary" id="download-btn" onclick="triggerDownload()">下载 .docx 文件</button>
-        <button class="btn-secondary" onclick="backToStep1()">生成新模板</button>
+    <div class="card">
+      <div class="success-wrap">
+        <div class="success-icon">
+          <svg viewBox="0 0 22 22" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M4 11l5 5 9-9" stroke="#1D9E75" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+        </div>
+        <h2>Word 模板已生成</h2>
+        <p>厦门大学电子学院研究生学位论文模板已下载，<br>包含完整章节结构与精确格式设置。</p>
+        <div style="display:flex;gap:8px;justify-content:center;flex-wrap:wrap;">
+          <button class="btn btn-primary" onclick="redownload()">重新下载</button>
+          <button class="btn btn-secondary" onclick="reset()">返回</button>
+        </div>
       </div>
     </div>
-    <div class="card" style="margin-top:0;">
+    <div class="card">
       <div class="card-title">使用说明</div>
-      <div style="font-size:13px;color:var(--color-text-secondary);line-height:1.8;">
+      <div class="note-box">
         <p>① 用 Microsoft Word 或 WPS 打开下载的文件</p>
-        <p>② 所有标题样式已预设好字体、字号、间距等格式</p>
-        <p>③ 替换封面、摘要、各章节的占位文字即可开始写作</p>
-        <p>④ 如需调整，在「样式」面板中修改对应标题样式即可全局更新</p>
+        <p>② 封面、声明、答辩委员会名单部分单面打印，摘要之后双面打印</p>
+        <p>③ 摘要至目录页码为罗马数字（Ⅰ、Ⅱ…），正文起改为阿拉伯数字</p>
+        <p>④ 图编号格式为"图2.1"，图题在图下方；表编号格式为"表3.1"，表题在表上方</p>
+        <p>⑤ 目录请在 Word 中点击"更新域"自动生成</p>
       </div>
     </div>
   </div>
 
 </div>
-
 <script>
-const presets = {
-  pku: {
-    name: '北京大学',
-    text: `北京大学本科毕业论文格式要求：
-• 纸张：A4，纵向
-• 页边距：上2.5cm、下2.5cm、左3cm、右2.5cm
-• 一级标题（章标题）：黑体三号（16pt），居中，段前24pt段后12pt，不编序号采用"第X章"格式
-• 二级标题（节标题）：黑体四号（14pt），左对齐，段前18pt段后6pt
-• 三级标题（小节标题）：黑体小四号（12pt），左对齐，段前12pt段后0pt
-• 正文：宋体小四号（12pt），首行缩进2字符，行距1.5倍行距
-• 页眉：论文题目，居中，宋体小五号（9pt）
-• 页码：居中，Times New Roman小五号
-• 图注/表注：宋体五号（10.5pt），居中`
-  },
-  tsinghua: {
-    name: '清华大学',
-    text: `清华大学硕士学位论文格式要求：
-• 纸张：A4，页边距上2.5cm、下2.5cm、左3cm、右2cm
-• 章标题：黑体三号（16pt），居中，单独占一行，段前1行，段后0.5行
-• 节标题（1.1）：黑体四号（14pt），左对齐，段前0.5行段后0
-• 条标题（1.1.1）：黑体小四号（12pt），左对齐
-• 正文：宋体小四号（12pt），两端对齐，首行缩进2字，行间距为固定值20pt
-• 图表题注：宋体五号（10.5pt），居中
-• 参考文献：宋体小五号（9pt），悬挂缩进`
-  },
-  zju: {
-    name: '浙江大学',
-    text: `浙江大学博士学位论文格式要求：
-• 版式：A4，上下左右页边距均为2.5cm
-• 一级标题：黑体二号（22pt），居中，与正文间距为段前1行段后1行
-• 二级标题：黑体三号（16pt），左对齐，段前0.5行
-• 三级标题：黑体小三号（15pt），左对齐
-• 四级标题：黑体四号（14pt），左对齐
-• 正文：宋体小四号（12pt），行距1.5倍，段前段后0
-• 中文摘要：宋体小四号，行距1.5倍
-• 英文摘要：Times New Roman 12pt，行距1.5倍`
-  },
-  generic: {
-    name: '通用格式',
-    text: `通用高校毕业论文格式：
-• 纸张：A4，页边距上3cm、下2.5cm、左3cm、右2.5cm
-• 一级标题：黑体三号（16pt），居中，段前24pt段后12pt
-• 二级标题：黑体四号（14pt），左对齐，段前18pt段后6pt
-• 三级标题：黑体小四号（12pt），左对齐，段前12pt
-• 正文：宋体小四号（12pt），首行缩进2字，行距1.5倍
-• 页眉：宋体小五号（9pt），居中
-• 页码：Times New Roman 10pt，居中`
-  }
+let blob = null;
+
+// 单位换算
+function cm2twip(cm) { return Math.round(cm * 567); }
+function pt2half(pt) { return Math.round(pt * 2); }
+function pt2twip(pt) { return Math.round(pt * 20); }
+
+// 厦大电子学院格式参数
+const XMU = {
+  // 正文页边距（正文部分）
+  bodyMargin: { top: 3.0, bottom: 3.0, left: 3.0, right: 3.0 },
+  // 普通页边距（封面等）
+  normalMargin: { top: 2.54, bottom: 2.54, left: 3.18, right: 3.18 },
+  headerFooterEdge: 2.2,
+  // 正文
+  bodyFont: '宋体', bodyFontEn: 'Times New Roman', bodySize: 12,
+  lineSpacing: 1.5,
+  // 章标题：小三 = 15pt
+  h1: { font: '黑体', size: 15, spaceBefore: 24, spaceAfter: 18 },
+  // 一级节标题：四号 = 14pt
+  h2: { font: '黑体', size: 14, spaceBefore: 13, spaceAfter: 6 },
+  // 二级节标题：小四 = 12pt
+  h3: { font: '黑体', size: 12, spaceBefore: 10, spaceAfter: 0 },
+  // 图表注：小四宋体加粗居中
+  caption: { font: '宋体', size: 12 },
+  // 页眉：宋体五号 = 9pt
+  headerFont: '宋体', headerSize: 9,
+  // 页码：Times New Roman 五号 = 9pt
+  pageNumFont: 'Times New Roman', pageNumSize: 9,
 };
 
-let parsedFormat = null;
-let docxBlob = null;
-
-const templateChapters = [
-  { label: '封面', tag: '封面页' },
-  { label: '诚信声明', tag: '声明页' },
-  { label: '摘要（中文）', tag: '必要' },
-  { label: 'Abstract（英文）', tag: '必要' },
-  { label: '目录', tag: '自动生成' },
-  { label: '第1章 绪论', tag: '正文章' },
-  { label: '第2章 相关工作', tag: '正文章' },
-  { label: '第3章 研究方法', tag: '正文章' },
-  { label: '第4章 实验与分析', tag: '正文章' },
-  { label: '第5章 总结与展望', tag: '正文章' },
-  { label: '参考文献', tag: '必要' },
-  { label: '附录', tag: '可选' },
-  { label: '致谢', tag: '必要' },
-];
-
-function fillPreset(key) {
-  const p = presets[key];
-  document.getElementById('school-name').value = p.name;
-  document.getElementById('format-input').value = p.text;
-}
-
-async function analyzeFormat() {
-  const schoolName = document.getElementById('school-name').value.trim();
-  const formatText = document.getElementById('format-input').value.trim();
-  if (!schoolName && !formatText) {
-    alert('请填写学校名称或格式要求');
-    return;
-  }
-
-  const btn = document.getElementById('analyze-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span><span>解析中…</span>';
-  document.getElementById('analyze-status').classList.remove('hidden');
-
-  const prompt = `你是一个高校论文格式解析专家。请从以下格式要求中提取结构化参数，严格只返回JSON，不要任何markdown代码块或解释文字。
-
-学校：${schoolName || '未指定'}
-格式要求：
-${formatText || '使用中国高校通用论文格式标准'}
-
-请返回如下JSON结构（所有字段都要填写，缺失信息使用合理默认值）：
-{
-  "schoolName": "学校名称",
-  "thesisType": "论文类型",
-  "pageSize": "A4",
-  "margins": { "top": 2.5, "bottom": 2.5, "left": 3.0, "right": 2.5 },
-  "bodyFont": "宋体",
-  "bodyFontEn": "Times New Roman",
-  "bodySize": 12,
-  "lineSpacing": 1.5,
-  "firstLineIndent": true,
-  "heading1": { "font": "黑体", "size": 16, "bold": true, "alignment": "center", "spaceBefore": 24, "spaceAfter": 12, "prefix": "第X章" },
-  "heading2": { "font": "黑体", "size": 14, "bold": true, "alignment": "left", "spaceBefore": 18, "spaceAfter": 6 },
-  "heading3": { "font": "黑体", "size": 12, "bold": true, "alignment": "left", "spaceBefore": 12, "spaceAfter": 0 },
-  "caption": { "font": "宋体", "size": 10.5, "alignment": "center" },
-  "pageHeader": true,
-  "pageFooter": true,
-  "pageNumberStyle": "Arabic"
-}`;
-
-  try {
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1000,
-        messages: [{ role: 'user', content: prompt }]
-      })
-    });
-    const data = await resp.json();
-    const raw = data.content.map(c => c.text || '').join('');
-    const cleaned = raw.replace(/```json|```/g, '').trim();
-    parsedFormat = JSON.parse(cleaned);
-    showStep2();
-  } catch (e) {
-    parsedFormat = buildDefaultFormat(schoolName);
-    showStep2();
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<span>AI 解析格式</span><span style="font-size:12px;opacity:0.7;">↗</span>';
-    document.getElementById('analyze-status').classList.add('hidden');
-  }
-}
-
-function buildDefaultFormat(name) {
-  return {
-    schoolName: name || '未命名学校', thesisType: '本科毕业论文',
-    pageSize: 'A4',
-    margins: { top: 2.5, bottom: 2.5, left: 3.0, right: 2.5 },
-    bodyFont: '宋体', bodyFontEn: 'Times New Roman', bodySize: 12,
-    lineSpacing: 1.5, firstLineIndent: true,
-    heading1: { font: '黑体', size: 16, bold: true, alignment: 'center', spaceBefore: 24, spaceAfter: 12, prefix: '第X章' },
-    heading2: { font: '黑体', size: 14, bold: true, alignment: 'left', spaceBefore: 18, spaceAfter: 6 },
-    heading3: { font: '黑体', size: 12, bold: true, alignment: 'left', spaceBefore: 12, spaceAfter: 0 },
-    caption: { font: '宋体', size: 10.5, alignment: 'center' },
-    pageHeader: true, pageFooter: true, pageNumberStyle: 'Arabic'
-  };
-}
-
-function showStep2() {
-  document.getElementById('step1').classList.add('hidden');
-  document.getElementById('step2').classList.remove('hidden');
-  setStepActive(2);
-
-  const f = parsedFormat;
-  document.getElementById('school-display').textContent = f.schoolName + ' ' + (f.thesisType || '');
-  document.getElementById('param-count').textContent = '12';
-
-  renderFormatOverview(f);
-  renderEditFields(f);
-  renderDocPreview(f);
-  renderChapters();
-}
-
-function renderFormatOverview(f) {
-  const container = document.getElementById('format-overview');
-  const sections = [
-    { title: '页面设置', rows: [
-      ['纸张', f.pageSize],
-      ['上/下边距', `${f.margins.top}cm / ${f.margins.bottom}cm`],
-      ['左/右边距', `${f.margins.left}cm / ${f.margins.right}cm`],
-    ]},
-    { title: '正文格式', rows: [
-      ['字体', f.bodyFont + ' / ' + f.bodyFontEn],
-      ['字号', f.bodySize + 'pt'],
-      ['行距', f.lineSpacing + '倍'],
-    ]},
-    { title: '一级标题（章）', rows: [
-      ['字体 / 字号', f.heading1.font + ' ' + f.heading1.size + 'pt'],
-      ['对齐', f.heading1.alignment === 'center' ? '居中' : '左对齐'],
-      ['段前 / 段后', `${f.heading1.spaceBefore}pt / ${f.heading1.spaceAfter}pt`],
-    ]},
-    { title: '二/三级标题', rows: [
-      ['二级', f.heading2.font + ' ' + f.heading2.size + 'pt 左对齐'],
-      ['三级', f.heading3.font + ' ' + f.heading3.size + 'pt 左对齐'],
-      ['图表注', f.caption.font + ' ' + f.caption.size + 'pt'],
-    ]},
-  ];
-
-  container.innerHTML = sections.map(s => `
-    <div class="format-card">
-      <div class="format-card-title">${s.title}</div>
-      ${s.rows.map(([k,v]) => `
-        <div class="format-row">
-          <span class="format-key">${k}</span>
-          <span class="format-val">${v}</span>
-        </div>`).join('')}
-    </div>`).join('');
-}
-
-function renderEditFields(f) {
-  const fields = [
-    ['bodyFont', '正文中文字体', f.bodyFont],
-    ['bodySize', '正文字号(pt)', f.bodySize],
-    ['lineSpacing', '行距(倍)', f.lineSpacing],
-    ['h1Font', '章标题字体', f.heading1.font],
-    ['h1Size', '章标题字号(pt)', f.heading1.size],
-    ['h2Font', '节标题字体', f.heading2.font],
-    ['h2Size', '节标题字号(pt)', f.heading2.size],
-    ['marginTop', '上边距(cm)', f.margins.top],
-    ['marginBottom', '下边距(cm)', f.margins.bottom],
-    ['marginLeft', '左边距(cm)', f.margins.left],
-    ['marginRight', '右边距(cm)', f.margins.right],
-    ['captionSize', '图注字号(pt)', f.caption.size],
-  ];
-
-  document.getElementById('format-edit-fields').innerHTML = fields.map(([id, label, val]) => `
-    <div class="edit-field">
-      <label>${label}</label>
-      <input type="text" id="ef-${id}" value="${val}" />
-    </div>`).join('');
-}
-
-function renderDocPreview(f) {
-  const h1Align = f.heading1.alignment === 'center' ? 'text-align:center' : '';
-  document.getElementById('doc-preview').innerHTML = `
-    <div style="font-size:9px;color:#999;text-align:center;border-bottom:0.5px solid #eee;padding-bottom:6px;margin-bottom:12px;font-family:Arial,sans-serif;">
-      ${f.schoolName || '学校名称'} — ${f.thesisType || '毕业论文'}
-    </div>
-    <div class="preview-chapter" style="${h1Align}">第1章 绪 论</div>
-    <p class="preview-body">本章介绍研究背景、研究意义、研究方法及论文结构安排，为后续章节的展开提供整体框架。</p>
-    <div class="preview-section">1.1 研究背景</div>
-    <p class="preview-body">随着信息技术的快速发展，自动化工具在学术写作领域的应用越来越广泛，本研究致力于探索……</p>
-    <div class="preview-subsection">1.1.1 国内研究现状</div>
-    <p class="preview-body">国内学者在该领域已开展了大量研究工作，取得了一系列重要成果，为本研究奠定了坚实基础……</p>
-    <div class="preview-section">1.2 研究意义</div>
-    <p class="preview-body">本研究的理论意义在于丰富了该领域的研究成果；实践意义在于为从业人员提供了有效的工具与方法……</p>
-    <div style="font-size:9px;color:#999;text-align:center;border-top:0.5px solid #eee;padding-top:6px;margin-top:12px;font-family:Arial,sans-serif;">
-      — 1 —
-    </div>`;
-}
-
-function renderChapters() {
-  document.getElementById('chapters-list').innerHTML = templateChapters.map(c => `
-    <div class="chapter-item">
-      <span class="chapter-tag">${c.tag}</span>
-      <span>${c.label}</span>
-    </div>`).join('');
-}
-
-function switchTab(tab) {
-  ['overview','edit','preview'].forEach(t => {
-    document.getElementById(`tab-content-${t}`).classList.toggle('hidden', t !== tab);
-    document.getElementById(`tab-${t}`).classList.toggle('active', t === tab);
-  });
-}
-
-function setStepActive(n) {
+function setStep(n) {
   [1,2,3].forEach(i => {
-    const el = document.getElementById(`step${i}-nav`);
+    document.getElementById(`step${i}`).classList.toggle('hidden', i !== n);
+    const el = document.getElementById(`s${i}`);
     el.classList.remove('active','done');
     if (i < n) el.classList.add('done');
     else if (i === n) el.classList.add('active');
   });
 }
 
-function backToStep1() {
-  document.getElementById('step2').classList.add('hidden');
-  document.getElementById('step3').classList.add('hidden');
-  document.getElementById('step1').classList.remove('hidden');
-  setStepActive(1);
-  docxBlob = null;
-}
+function reset() { setStep(1); blob = null; }
+function redownload() { if (blob) doDownload(); }
 
-function ptToTwip(pt) { return Math.round(pt * 20); }
-function cmToTwip(cm) { return Math.round(cm * 567); }
-function ptToHalfPt(pt) { return Math.round(pt * 2); }
-
-async function generateDocx() {
-  const btn = document.getElementById('gen-btn');
-  btn.disabled = true;
-  btn.innerHTML = '<span class="spinner"></span><span>生成中…</span>';
-  document.getElementById('gen-status').classList.remove('hidden');
-
-  try {
-    const f = parsedFormat;
-    const D = docx;
-    const AlignmentType = D.AlignmentType;
-    const HeadingLevel = D.HeadingLevel;
-
-    const h1Align = f.heading1.alignment === 'center' ? AlignmentType.CENTER : AlignmentType.LEFT;
-
-    function makeH1(text) {
-      return new D.Paragraph({
-        children: [new D.TextRun({ text, font: { name: f.heading1.font }, size: ptToHalfPt(f.heading1.size), bold: f.heading1.bold })],
-        alignment: h1Align,
-        spacing: { before: ptToTwip(f.heading1.spaceBefore), after: ptToTwip(f.heading1.spaceAfter) },
-        style: 'Heading1',
-      });
-    }
-
-    function makeH2(text) {
-      return new D.Paragraph({
-        children: [new D.TextRun({ text, font: { name: f.heading2.font }, size: ptToHalfPt(f.heading2.size), bold: f.heading2.bold })],
-        alignment: AlignmentType.LEFT,
-        spacing: { before: ptToTwip(f.heading2.spaceBefore), after: ptToTwip(f.heading2.spaceAfter) },
-        style: 'Heading2',
-      });
-    }
-
-    function makeH3(text) {
-      return new D.Paragraph({
-        children: [new D.TextRun({ text, font: { name: f.heading3.font }, size: ptToHalfPt(f.heading3.size), bold: f.heading3.bold })],
-        alignment: AlignmentType.LEFT,
-        spacing: { before: ptToTwip(f.heading3.spaceBefore || 12), after: 0 },
-        style: 'Heading3',
-      });
-    }
-
-    function makeBody(text, indent = true) {
-      return new D.Paragraph({
-        children: [new D.TextRun({ text, font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) })],
-        alignment: AlignmentType.JUSTIFIED,
-        indent: indent ? { firstLine: ptToTwip(f.bodySize * 2) } : undefined,
-        spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
-      });
-    }
-
-    function makePlaceholder(text) {
-      return new D.Paragraph({
-        children: [new D.TextRun({ text: `【${text}】`, font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA', italics: true })],
-        spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
-      });
-    }
-
-    function pageBreak() {
-      return new D.Paragraph({ children: [new D.PageBreak()] });
-    }
-
-    function emptyLine() {
-      return new D.Paragraph({ children: [new D.TextRun('')] });
-    }
-
-    const margins = {
-      top: cmToTwip(f.margins.top),
-      bottom: cmToTwip(f.margins.bottom),
-      left: cmToTwip(f.margins.left),
-      right: cmToTwip(f.margins.right),
-    };
-
-    const sections = [{
-      properties: {
-        page: {
-          margin: margins,
-          size: { width: 11906, height: 16838 }
-        }
-      },
-      headers: f.pageHeader ? {
-        default: new D.Header({
-          children: [new D.Paragraph({
-            children: [new D.TextRun({ text: `${f.schoolName} ${f.thesisType}`, font: { name: f.bodyFont }, size: 18 })],
-            alignment: AlignmentType.CENTER,
-          })]
-        })
-      } : undefined,
-      footers: f.pageFooter ? {
-        default: new D.Footer({
-          children: [new D.Paragraph({
-            children: [new D.TextRun({ children: [D.PageNumber.CURRENT], font: { name: 'Times New Roman' }, size: 18 })],
-            alignment: AlignmentType.CENTER,
-          })]
-        })
-      } : undefined,
-      children: [
-        // Cover placeholder
-        emptyLine(), emptyLine(), emptyLine(),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: f.schoolName, font: { name: f.heading1.font }, size: ptToHalfPt(20), bold: true })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 200 },
-        }),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: f.thesisType, font: { name: f.heading1.font }, size: ptToHalfPt(22), bold: true })],
-          alignment: AlignmentType.CENTER,
-          spacing: { after: 800 },
-        }),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: '题    目：', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) }),
-                     new D.TextRun({ text: '（请填写论文题目）', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA' })],
-          alignment: AlignmentType.CENTER, spacing: { after: 200 },
-        }),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: '学    院：', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) }),
-                     new D.TextRun({ text: '（请填写学院名称）', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA' })],
-          alignment: AlignmentType.CENTER, spacing: { after: 200 },
-        }),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: '专    业：', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) }),
-                     new D.TextRun({ text: '（请填写专业名称）', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA' })],
-          alignment: AlignmentType.CENTER, spacing: { after: 200 },
-        }),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: '学    号：', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) }),
-                     new D.TextRun({ text: '（请填写学号）', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA' })],
-          alignment: AlignmentType.CENTER, spacing: { after: 200 },
-        }),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: '姓    名：', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) }),
-                     new D.TextRun({ text: '（请填写姓名）', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA' })],
-          alignment: AlignmentType.CENTER, spacing: { after: 200 },
-        }),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: '指导教师：', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) }),
-                     new D.TextRun({ text: '（请填写指导教师）', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA' })],
-          alignment: AlignmentType.CENTER, spacing: { after: 200 },
-        }),
-        emptyLine(), emptyLine(),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: '提交日期：        年    月    日', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) })],
-          alignment: AlignmentType.CENTER,
-        }),
-        pageBreak(),
-
-        // Abstract CN
-        makeH1('摘  要'),
-        emptyLine(),
-        makePlaceholder('在此填写中文摘要，300-500字，概述研究背景、研究内容、研究方法、主要结果及结论。'),
-        emptyLine(),
-        new D.Paragraph({
-          children: [
-            new D.TextRun({ text: '关键词：', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), bold: true }),
-            new D.TextRun({ text: '关键词1；关键词2；关键词3；关键词4；关键词5', font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA' }),
-          ],
-          spacing: { line: Math.round(f.lineSpacing * 240) },
-        }),
-        pageBreak(),
-
-        // Abstract EN
-        makeH1('ABSTRACT'),
-        emptyLine(),
-        makePlaceholder('Please enter the English abstract here (300-500 words). Briefly describe the research background, objectives, methods, results, and conclusions.'),
-        emptyLine(),
-        new D.Paragraph({
-          children: [
-            new D.TextRun({ text: 'Keywords: ', font: { name: f.bodyFontEn || 'Times New Roman' }, size: ptToHalfPt(f.bodySize), bold: true }),
-            new D.TextRun({ text: 'keyword1; keyword2; keyword3; keyword4; keyword5', font: { name: f.bodyFontEn || 'Times New Roman' }, size: ptToHalfPt(f.bodySize), color: 'AAAAAA' }),
-          ],
-          spacing: { line: Math.round(f.lineSpacing * 240) },
-        }),
-        pageBreak(),
-
-        // TOC placeholder
-        makeH1('目  录'),
-        emptyLine(),
-        makePlaceholder('【目录将由 Word 自动生成。请点击此处，选择"更新域"→"更新整个目录"即可。】'),
-        pageBreak(),
-
-        // Chapter 1
-        makeH1('第1章  绪  论'),
-        makeH2('1.1  研究背景'),
-        makeBody('（请在此填写研究背景内容。阐述研究的时代背景、领域现状以及相关政策或技术发展趋势。）'),
-        makeH3('1.1.1  国内研究现状'),
-        makeBody('（请在此填写国内相关研究的综述内容。）'),
-        makeH3('1.1.2  国外研究现状'),
-        makeBody('（请在此填写国外相关研究的综述内容。）'),
-        makeH2('1.2  研究意义'),
-        makeBody('（请在此填写研究的理论意义和实践意义。）'),
-        makeH2('1.3  研究内容与方法'),
-        makeBody('（请在此简述本研究的核心研究内容、采用的研究方法和技术路线。）'),
-        makeH2('1.4  论文结构安排'),
-        makeBody('本文共分为五章，各章节内容安排如下：'),
-        makeBody('第1章为绪论，介绍研究背景、意义及论文结构。'),
-        makeBody('第2章综述相关工作，分析现有研究的不足。'),
-        makeBody('第3章详述本文的研究方法与技术路线。'),
-        makeBody('第4章开展实验并对结果进行分析讨论。'),
-        makeBody('第5章总结全文，展望未来研究方向。'),
-        pageBreak(),
-
-        // Chapter 2
-        makeH1('第2章  相关工作'),
-        makeH2('2.1  相关理论基础'),
-        makeBody('（请在此填写与本研究密切相关的理论基础、概念定义等内容。）'),
-        makeH2('2.2  相关技术综述'),
-        makeBody('（请在此综述与本研究相关的已有技术方案、算法或模型，并指出其优缺点。）'),
-        makeH2('2.3  本章小结'),
-        makeBody('（概括本章内容，说明相关工作对本研究的启示。）'),
-        pageBreak(),
-
-        // Chapter 3
-        makeH1('第3章  研究方法'),
-        makeH2('3.1  总体方案设计'),
-        makeBody('（描述本研究的总体技术路线、系统框架或实验设计。）'),
-        makeH2('3.2  核心方法详述'),
-        makeH3('3.2.1  方法一'),
-        makeBody('（详细描述具体方法、模型或算法。）'),
-        makeH3('3.2.2  方法二'),
-        makeBody('（详细描述具体方法、模型或算法。）'),
-        makeH2('3.3  本章小结'),
-        makeBody('（概括本章提出的方法与方案，为后续实验奠定基础。）'),
-        pageBreak(),
-
-        // Chapter 4
-        makeH1('第4章  实验与分析'),
-        makeH2('4.1  实验设置'),
-        makeH3('4.1.1  数据集'),
-        makeBody('（描述实验所用数据集的来源、规模和预处理方式。）'),
-        makeH3('4.1.2  实验环境'),
-        makeBody('（描述硬件环境、软件框架和超参数设置。）'),
-        makeH2('4.2  实验结果'),
-        makeBody('（呈现实验数据，配合表格或图形说明。）'),
-        new D.Paragraph({
-          children: [new D.TextRun({ text: '表4-1  实验结果对比', font: { name: f.caption.font }, size: ptToHalfPt(f.caption.size) })],
-          alignment: f.caption.alignment === 'center' ? AlignmentType.CENTER : AlignmentType.LEFT,
-          spacing: { before: 120, after: 60 },
-        }),
-        makeH2('4.3  结果分析与讨论'),
-        makeBody('（对实验结果进行深入分析，与基线方法对比，解释结果的原因。）'),
-        makeH2('4.4  本章小结'),
-        makeBody('（概括本章实验结论。）'),
-        pageBreak(),
-
-        // Chapter 5
-        makeH1('第5章  总结与展望'),
-        makeH2('5.1  工作总结'),
-        makeBody('（总结本文的主要研究内容和创新点。）'),
-        makeH2('5.2  研究展望'),
-        makeBody('（指出本研究的不足之处，展望未来可以继续深入研究的方向。）'),
-        pageBreak(),
-
-        // References
-        makeH1('参考文献'),
-        emptyLine(),
-        makeBody('[1]（作者）.（文章标题）[J].（期刊名）,（年份）,（卷）(（期）):(起始页-终止页).', false),
-        makeBody('[2]（作者）.（书名）[M].（出版地）:（出版社）,（年份）.', false),
-        makeBody('[3]（在此按学校格式继续添加参考文献）', false),
-        pageBreak(),
-
-        // Appendix
-        makeH1('附录A  （附录标题）'),
-        makePlaceholder('如有附录，请在此添加内容。若无附录，可删除本节。'),
-        pageBreak(),
-
-        // Acknowledgements
-        makeH1('致  谢'),
-        emptyLine(),
-        makePlaceholder('在此填写致谢内容，感谢导师、同学、家人等在论文研究过程中给予的帮助与支持。通常300-500字。'),
-      ]
-    }];
-
-    const doc = new D.Document({
-      creator: f.schoolName,
-      title: f.thesisType,
-      styles: {
-        default: {
-          document: {
-            run: { font: { name: f.bodyFont }, size: ptToHalfPt(f.bodySize) },
-          }
-        }
-      },
-      sections,
-    });
-
-    docxBlob = await D.Packer.toBlob(doc);
-    showStep3();
-  } catch(e) {
-    console.error(e);
-    alert('生成失败：' + e.message);
-  } finally {
-    btn.disabled = false;
-    btn.innerHTML = '<span>生成 Word 模板</span>';
-    document.getElementById('gen-status').classList.add('hidden');
-  }
-}
-
-function showStep3() {
-  document.getElementById('step2').classList.add('hidden');
-  document.getElementById('step3').classList.remove('hidden');
-  setStepActive(3);
-  const f = parsedFormat;
-  document.getElementById('school-done').textContent = f.schoolName;
-  triggerDownload();
-}
-
-function triggerDownload() {
-  if (!docxBlob) return;
-  const f = parsedFormat;
-  const url = URL.createObjectURL(docxBlob);
+function doDownload() {
+  const url = URL.createObjectURL(blob);
   const a = document.createElement('a');
   a.href = url;
-  a.download = `${f.schoolName}_${f.thesisType}_模板.docx`;
+  a.download = '厦门大学电子学院_研究生学位论文模板.docx';
   document.body.appendChild(a);
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(url);
+}
+
+async function generate() {
+  setStep(2);
+  await new Promise(r => setTimeout(r, 50));
+  try {
+    blob = await buildDocx();
+    doDownload();
+    setStep(3);
+  } catch(e) {
+    alert('生成失败：' + e.message);
+    setStep(1);
+  }
+}
+
+async function buildDocx() {
+  const D = docx;
+  const A = D.AlignmentType;
+  const f = XMU;
+
+  // 颜色全部黑色
+  const BLACK = '000000';
+
+  function bodyRun(text, opts = {}) {
+    return new D.TextRun({
+      text,
+      font: { name: opts.font || f.bodyFont },
+      size: pt2half(opts.size || f.bodySize),
+      bold: opts.bold || false,
+      color: BLACK,
+      ...opts.extra
+    });
+  }
+
+  function bodyPara(text, opts = {}) {
+    return new D.Paragraph({
+      children: [bodyRun(text, opts)],
+      alignment: opts.align !== undefined ? opts.align : A.JUSTIFIED,
+      indent: opts.noIndent ? undefined : { firstLine: pt2twip(f.bodySize * 2) },
+      spacing: {
+        line: Math.round(f.lineSpacing * 240),
+        lineRule: D.LineRuleType.AUTO,
+        before: opts.spaceBefore ? pt2twip(opts.spaceBefore) : 0,
+        after: opts.spaceAfter ? pt2twip(opts.spaceAfter) : 0,
+      },
+      style: opts.style || undefined,
+    });
+  }
+
+  function h1(text) {
+    return new D.Paragraph({
+      children: [new D.TextRun({ text, font: { name: f.h1.font }, size: pt2half(f.h1.size), bold: true, color: BLACK })],
+      alignment: A.CENTER,
+      spacing: { before: pt2twip(f.h1.spaceBefore), after: pt2twip(f.h1.spaceAfter), line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+      style: 'Heading1',
+    });
+  }
+
+  function h2(text) {
+    return new D.Paragraph({
+      children: [new D.TextRun({ text, font: { name: f.h2.font }, size: pt2half(f.h2.size), bold: true, color: BLACK })],
+      alignment: A.LEFT,
+      spacing: { before: pt2twip(f.h2.spaceBefore), after: pt2twip(f.h2.spaceAfter), line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+      style: 'Heading2',
+    });
+  }
+
+  function h3(text) {
+    return new D.Paragraph({
+      children: [new D.TextRun({ text, font: { name: f.h3.font }, size: pt2half(f.h3.size), bold: true, color: BLACK })],
+      alignment: A.LEFT,
+      spacing: { before: pt2twip(f.h3.spaceBefore), after: pt2twip(f.h3.spaceAfter), line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+      style: 'Heading3',
+    });
+  }
+
+  function placeholder(text) {
+    return new D.Paragraph({
+      children: [new D.TextRun({ text: `【${text}】`, font: { name: f.bodyFont }, size: pt2half(f.bodySize), color: 'AAAAAA', italics: true })],
+      indent: { firstLine: pt2twip(f.bodySize * 2) },
+      spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+    });
+  }
+
+  function captionPara(text) {
+    return new D.Paragraph({
+      children: [new D.TextRun({ text, font: { name: f.caption.font }, size: pt2half(f.caption.size), bold: true, color: BLACK })],
+      alignment: A.CENTER,
+      spacing: { before: pt2twip(6), after: pt2twip(6) },
+    });
+  }
+
+  function emptyLine() {
+    return new D.Paragraph({ children: [new D.TextRun({ text: '', font: { name: f.bodyFont }, size: pt2half(f.bodySize) })] });
+  }
+
+  function pageBreak() {
+    return new D.Paragraph({ children: [new D.PageBreak()] });
+  }
+
+  function centerPara(text, size, bold = false, font) {
+    return new D.Paragraph({
+      children: [new D.TextRun({ text, font: { name: font || f.bodyFont }, size: pt2half(size), bold, color: BLACK })],
+      alignment: A.CENTER,
+      spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO, after: pt2twip(6) },
+    });
+  }
+
+  function fillLine(label, hint, size = f.bodySize) {
+    return new D.Paragraph({
+      children: [
+        new D.TextRun({ text: label, font: { name: f.bodyFont }, size: pt2half(size), color: BLACK }),
+        new D.TextRun({ text: hint, font: { name: f.bodyFont }, size: pt2half(size), color: 'AAAAAA' }),
+      ],
+      alignment: A.CENTER,
+      spacing: { after: pt2twip(8), line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+    });
+  }
+
+  const bodyMargins = {
+    top: cm2twip(f.bodyMargin.top), bottom: cm2twip(f.bodyMargin.bottom),
+    left: cm2twip(f.bodyMargin.left), right: cm2twip(f.bodyMargin.right),
+    header: cm2twip(f.headerFooterEdge), footer: cm2twip(f.headerFooterEdge),
+  };
+
+  const normalMargins = {
+    top: cm2twip(f.normalMargin.top), bottom: cm2twip(f.normalMargin.bottom),
+    left: cm2twip(f.normalMargin.left), right: cm2twip(f.normalMargin.right),
+    header: cm2twip(f.headerFooterEdge), footer: cm2twip(f.headerFooterEdge),
+  };
+
+  // 页脚（页码居中）
+  function makeFooter(numType) {
+    return new D.Footer({
+      children: [new D.Paragraph({
+        children: [new D.TextRun({
+          children: [D.PageNumber.CURRENT],
+          font: { name: f.pageNumFont }, size: pt2half(f.pageNumSize), color: BLACK,
+        })],
+        alignment: A.CENTER,
+      })]
+    });
+  }
+
+  // 页眉
+  function makeHeader(text) {
+    return new D.Header({
+      children: [new D.Paragraph({
+        children: [new D.TextRun({ text, font: { name: f.headerFont }, size: pt2half(f.headerSize), color: BLACK })],
+        alignment: A.CENTER,
+        border: { bottom: { color: BLACK, space: 1, style: D.BorderStyle.SINGLE, size: 6 } },
+      })]
+    });
+  }
+
+  const doc = new D.Document({
+    creator: '厦门大学电子学院',
+    title: '研究生学位论文',
+    sections: [
+
+      // ===== 第一节：封面、声明、答辩委员会（单面，无页眉页码）=====
+      {
+        properties: {
+          page: { margin: normalMargins, size: { width: 11906, height: 16838 } }
+        },
+        children: [
+          // 封面
+          emptyLine(), emptyLine(), emptyLine(),
+          centerPara('厦 门 大 学', 22, true, f.h1.font),
+          centerPara('研 究 生 学 位 论 文', 18, true, f.h1.font),
+          emptyLine(), emptyLine(),
+          fillLine('论文题目：', '（请填写论文题目）', 14),
+          emptyLine(),
+          fillLine('学    院：', '电子科学与技术学院', f.bodySize),
+          fillLine('专    业：', '（请填写专业名称）', f.bodySize),
+          fillLine('研 究 方 向：', '（请填写研究方向）', f.bodySize),
+          fillLine('学    号：', '（请填写学号）', f.bodySize),
+          fillLine('姓    名：', '（请填写姓名）', f.bodySize),
+          fillLine('导    师：', '（请填写导师姓名）职称', f.bodySize),
+          emptyLine(), emptyLine(),
+          centerPara('提交日期：        年    月    日', f.bodySize, false),
+          pageBreak(),
+
+          // 学位论文原创性声明
+          centerPara('厦门大学学位论文原创性声明', 16, true, f.h1.font),
+          emptyLine(),
+          bodyPara('本人呈交的学位论文是本人在导师指导下，独立完成的研究成果。本人在论文写作中参考其他个人或集体已经发表的研究成果，均在文中以适当方式明确标明，并符合法律规范和《厦门大学研究生学术活动准则（试行）》。'),
+          bodyPara('另外，该学位论文为（　　　　　　　　　　　　　　　　　　）课题（组）的研究成果，获得（　　　　　　　　　　　　　　　　）课题（组）经费或实验室的资助，在（　　　　　　　　　　　　　　　　　　　　　）实验室完成。（请在以上括号内填写课题或课题组负责人或实验室名称，未有此项声明内容的，可以不作特别声明。）'),
+          emptyLine(),
+          bodyPara('声明人（签名）：　　　　　　　　　　　　　　　年　　月　　日', { align: A.RIGHT, noIndent: true }),
+          pageBreak(),
+
+          // 答辩委员会名单
+          centerPara('厦门大学学位论文答辩委员会名单', 16, true, f.h1.font),
+          emptyLine(),
+          bodyPara('答辩日期：　　　　　　年　　月　　日'),
+          emptyLine(),
+          bodyPara('答辩委员会主席：'),
+          emptyLine(),
+          bodyPara('答辩委员会成员：'),
+          emptyLine(), emptyLine(),
+          bodyPara('（以下填写答辩委员会成员名单）'),
+          pageBreak(),
+        ]
+      },
+
+      // ===== 第二节：摘要、Abstract、目录（罗马数字页码）=====
+      {
+        properties: {
+          page: { margin: bodyMargins, size: { width: 11906, height: 16838 } },
+          pageNumberStart: 1,
+          pageNumberFormatType: D.PageNumberFormat.UPPER_ROMAN,
+        },
+        headers: {
+          default: makeHeader('厦门大学研究生学位论文'),
+          even: makeHeader('厦门大学研究生学位论文'),
+        },
+        footers: {
+          default: makeFooter('UPPER_ROMAN'),
+        },
+        children: [
+          // 中文摘要
+          h1('摘　要'),
+          emptyLine(),
+          placeholder('在此填写中文摘要，300-500字。概述研究背景、目的、方法、主要结果及结论。'),
+          emptyLine(),
+          new D.Paragraph({
+            children: [
+              new D.TextRun({ text: '关键词：', font: { name: f.bodyFont }, size: pt2half(f.bodySize), bold: true, color: BLACK }),
+              new D.TextRun({ text: '关键词1；关键词2；关键词3；关键词4；关键词5', font: { name: f.bodyFont }, size: pt2half(f.bodySize), color: 'AAAAAA' }),
+            ],
+            spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+          }),
+          pageBreak(),
+
+          // 英文 Abstract
+          h1('ABSTRACT'),
+          emptyLine(),
+          new D.Paragraph({
+            children: [new D.TextRun({ text: '（Please enter the English abstract here, 300-500 words.）', font: { name: f.bodyFontEn }, size: pt2half(f.bodySize), color: 'AAAAAA', italics: true })],
+            indent: { firstLine: pt2twip(f.bodySize * 2) },
+            spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+          }),
+          emptyLine(),
+          new D.Paragraph({
+            children: [
+              new D.TextRun({ text: 'Keywords: ', font: { name: f.bodyFontEn }, size: pt2half(f.bodySize), bold: true, color: BLACK }),
+              new D.TextRun({ text: 'keyword1; keyword2; keyword3; keyword4; keyword5', font: { name: f.bodyFontEn }, size: pt2half(f.bodySize), color: 'AAAAAA' }),
+            ],
+            spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+          }),
+          pageBreak(),
+
+          // 目录
+          h1('目　录'),
+          emptyLine(),
+          new D.TableOfContents('目录', {
+            hyperlink: true, headingStyleRange: '1-3',
+            stylesWithLevels: [
+              new D.StyleLevel('Heading1', 1),
+              new D.StyleLevel('Heading2', 2),
+              new D.StyleLevel('Heading3', 3),
+            ],
+          }),
+          pageBreak(),
+        ]
+      },
+
+      // ===== 第三节：正文（阿拉伯数字页码）=====
+      {
+        properties: {
+          page: { margin: bodyMargins, size: { width: 11906, height: 16838 } },
+          pageNumberStart: 1,
+          pageNumberFormatType: D.PageNumberFormat.DECIMAL,
+        },
+        headers: {
+          default: makeHeader('第1章 绪论'),
+          even: makeHeader('厦门大学研究生学位论文'),
+        },
+        footers: {
+          default: makeFooter('DECIMAL'),
+        },
+        children: [
+          // 第1章
+          h1('第1章　绪　论'),
+          h2('1.1　研究背景'),
+          bodyPara('（请在此填写研究背景内容。阐述研究的时代背景、领域现状以及相关政策或技术发展趋势。）'),
+          h3('1.1.1　国内研究现状'),
+          bodyPara('（请在此填写国内相关研究的综述内容。）'),
+          h3('1.1.2　国外研究现状'),
+          bodyPara('（请在此填写国外相关研究的综述内容。）'),
+          h2('1.2　研究意义'),
+          bodyPara('（请在此填写研究的理论意义和实践意义。）'),
+          h2('1.3　研究内容与方法'),
+          bodyPara('（请在此简述本研究的核心研究内容、采用的研究方法和技术路线。）'),
+          h2('1.4　论文结构安排'),
+          bodyPara('本文共分为五章，各章内容安排如下：'),
+          bodyPara('第1章为绪论，介绍研究背景、意义及论文结构。'),
+          bodyPara('第2章综述相关工作，分析现有研究的不足。'),
+          bodyPara('第3章详述本文的研究方法与技术路线。'),
+          bodyPara('第4章开展实验并对结果进行分析讨论。'),
+          bodyPara('第5章总结全文，展望未来研究方向。'),
+          pageBreak(),
+
+          // 第2章
+          h1('第2章　相关工作'),
+          h2('2.1　相关理论基础'),
+          bodyPara('（请在此填写与本研究密切相关的理论基础与概念定义。）'),
+          captionPara('表2.1　相关方法对比'),
+          bodyPara('（在此插入表格，表题在表格上方）', { noIndent: true }),
+          emptyLine(),
+          bodyPara('（图题示例如下）', { noIndent: true }),
+          captionPara('图2.1　系统框架图'),
+          h2('2.2　相关技术综述'),
+          bodyPara('（请在此综述与本研究相关的已有技术方案、算法或模型。）'),
+          h2('2.3　本章小结'),
+          bodyPara('（概括本章内容，说明相关工作对本研究的启示。）'),
+          pageBreak(),
+
+          // 第3章
+          h1('第3章　研究方法'),
+          h2('3.1　总体方案设计'),
+          bodyPara('（描述本研究的总体技术路线、系统框架或实验设计。）'),
+          h2('3.2　核心方法详述'),
+          h3('3.2.1　方法一'),
+          bodyPara('（详细描述具体方法、模型或算法。）'),
+          h3('3.2.2　方法二'),
+          bodyPara('（详细描述具体方法、模型或算法。）'),
+          h2('3.3　本章小结'),
+          bodyPara('（概括本章提出的方法与方案。）'),
+          pageBreak(),
+
+          // 第4章
+          h1('第4章　实验与分析'),
+          h2('4.1　实验设置'),
+          h3('4.1.1　数据集'),
+          bodyPara('（描述实验所用数据集的来源、规模和预处理方式。）'),
+          h3('4.1.2　实验环境'),
+          bodyPara('（描述硬件环境、软件框架和超参数设置。）'),
+          h2('4.2　实验结果'),
+          captionPara('表4.1　实验结果对比'),
+          bodyPara('（在此插入实验结果表格。）', { noIndent: true }),
+          emptyLine(),
+          bodyPara('（图题示例如下）', { noIndent: true }),
+          captionPara('图4.1　实验结果对比图'),
+          h2('4.3　结果分析与讨论'),
+          bodyPara('（对实验结果进行深入分析，与基线方法对比，解释结果的原因。）'),
+          h2('4.4　本章小结'),
+          bodyPara('（概括本章实验结论。）'),
+          pageBreak(),
+
+          // 第5章
+          h1('第5章　总结与展望'),
+          h2('5.1　工作总结'),
+          bodyPara('（总结本文的主要研究内容和创新点。）'),
+          h2('5.2　研究展望'),
+          bodyPara('（指出本研究的不足之处，展望未来可以继续深入研究的方向。）'),
+          pageBreak(),
+
+          // 参考文献
+          h1('参考文献'),
+          emptyLine(),
+          new D.Paragraph({
+            children: [new D.TextRun({ text: '[1]（作者）.（文章标题）[J].（期刊名）,（年份）,（卷）(（期）):(起始页-终止页).', font: { name: f.bodyFont }, size: pt2half(f.bodySize), color: BLACK })],
+            spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO, after: pt2twip(4) },
+            indent: { hanging: pt2twip(f.bodySize * 2) },
+          }),
+          new D.Paragraph({
+            children: [new D.TextRun({ text: '[2]（作者）.（书名）[M].（出版地）:（出版社）,（年份）.', font: { name: f.bodyFont }, size: pt2half(f.bodySize), color: BLACK })],
+            spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO, after: pt2twip(4) },
+            indent: { hanging: pt2twip(f.bodySize * 2) },
+          }),
+          new D.Paragraph({
+            children: [new D.TextRun({ text: '[3]（按照GB/T 7714格式继续添加参考文献）', font: { name: f.bodyFont }, size: pt2half(f.bodySize), color: 'AAAAAA' })],
+            spacing: { line: Math.round(f.lineSpacing * 240), lineRule: D.LineRuleType.AUTO },
+          }),
+          pageBreak(),
+
+          // 致谢
+          h1('致　谢'),
+          emptyLine(),
+          placeholder('在此填写致谢内容，感谢导师、同学、家人等在论文研究过程中给予的帮助与支持。通常300-500字。'),
+        ]
+      }
+    ]
+  });
+
+  return await D.Packer.toBlob(doc);
 }
 </script>
 </body>
