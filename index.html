@@ -471,7 +471,7 @@ async function buildDocx() {
         properties: {
           page: { margin: bodyMargins, size: { width: 11906, height: 16838 } },
           pageNumberStart: 1,
-          pageNumberFormatType: D.PageNumberFormat.UPPER_ROMAN,
+          pageNumberFormatType: D.NumberFormat.UPPER_ROMAN,
         },
         headers: {
           default: makeHeader('厦门大学研究生学位论文'),
@@ -533,7 +533,7 @@ async function buildDocx() {
         properties: {
           page: { margin: bodyMargins, size: { width: 11906, height: 16838 } },
           pageNumberStart: 1,
-          pageNumberFormatType: D.PageNumberFormat.DECIMAL,
+          pageNumberFormatType: D.NumberFormat.DECIMAL,
         },
         headers: {
           default: makeHeader('第1章 绪论'),
