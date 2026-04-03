@@ -181,12 +181,12 @@ const SCHOOLS = [
       h2Font:'黑体',h2Size:14,h2SpaceBefore:18,h2SpaceAfter:6,
       h3Font:'黑体',h3Size:12,h3SpaceBefore:12,h3SpaceAfter:0,
       captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
-  { id:'tsinghua', name:'清华大学', dept:'通用格式', type:'硕士',
-    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
-      marginTop:2.5,marginBottom:2.5,marginLeft:3.0,marginRight:2.0,
-      h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:12,
-      h2Font:'黑体',h2Size:14,h2SpaceBefore:12,h2SpaceAfter:6,
-      h3Font:'黑体',h3Size:12,h3SpaceBefore:10,h3SpaceAfter:0,
+  { id:'tsinghua', name:'清华大学', dept:'研究生院', type:'研究生',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.43,
+      marginTop:3.0,marginBottom:3.0,marginLeft:3.0,marginRight:3.0,
+      h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:18,
+      h2Font:'黑体',h2Size:14,h2SpaceBefore:24,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:12,h3SpaceAfter:0,
       captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
   { id:'zju', name:'浙江大学', dept:'通用格式', type:'博士',
     params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
@@ -195,7 +195,35 @@ const SCHOOLS = [
       h2Font:'黑体',h2Size:16,h2SpaceBefore:12,h2SpaceAfter:6,
       h3Font:'黑体',h3Size:15,h3SpaceBefore:10,h3SpaceAfter:0,
       captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
+  { id:'sjtu', name:'上海交通大学', dept:'研究生院', type:'硕士',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
+      marginTop:3.5,marginBottom:4.0,marginLeft:2.5,marginRight:2.5,
+      h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:12,
+      h2Font:'黑体',h2Size:14,h2SpaceBefore:18,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:12,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
+  { id:'tongji', name:'同济大学', dept:'研究生院', type:'研究生',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.43,
+      marginTop:2.54,marginBottom:2.54,marginLeft:3.17,marginRight:3.17,
+      h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:18,
+      h2Font:'黑体',h2Size:15,h2SpaceBefore:24,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:12,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
+  { id:'nwpu', name:'西北工业大学', dept:'研究生院', type:'研究生',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.43,
+      marginTop:2.54,marginBottom:2.54,marginLeft:2.5,marginRight:2.5,
+      h1Font:'黑体',h1Size:16,h1SpaceBefore:13,h1SpaceAfter:0,
+      h2Font:'黑体',h2Size:14,h2SpaceBefore:13,h2SpaceAfter:0,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:10,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
   { id:'generic', name:'通用格式', dept:'适用大多数高校', type:'本/研',
+    params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
+      marginTop:2.5,marginBottom:2.5,marginLeft:3.0,marginRight:2.5,
+      h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:12,
+      h2Font:'黑体',h2Size:14,h2SpaceBefore:18,h2SpaceAfter:6,
+      h3Font:'黑体',h3Size:12,h3SpaceBefore:12,h3SpaceAfter:0,
+      captionFont:'宋体',captionSize:10.5,headerFont:'宋体',headerSize:9 }},
+  { id:'custom', name:'自定义格式', dept:'手动填写学校要求', type:'自定义',
     params:{ bodyFont:'宋体',bodyFontEn:'Times New Roman',bodySize:12,lineSpacing:1.5,
       marginTop:2.5,marginBottom:2.5,marginLeft:3.0,marginRight:2.5,
       h1Font:'黑体',h1Size:16,h1SpaceBefore:24,h1SpaceAfter:12,
@@ -243,12 +271,20 @@ const FIELDS = [
 let sel = null, p = {}, blob = null;
 
 function initSchools() {
-  document.getElementById('school-grid').innerHTML = SCHOOLS.map(s => `
-    <div class="school-card" id="sc-${s.id}" onclick="pickSchool('${s.id}')">
+  document.getElementById('school-grid').innerHTML = SCHOOLS.map(s => {
+    const isCustom = s.id === 'custom';
+    const badgeStyle = isCustom
+      ? 'background:#F3E8FF;color:#6B21A8'
+      : 'background:#E6F1FB;color:#185FA5';
+    const cardExtra = isCustom
+      ? 'border-style:dashed;'
+      : '';
+    return `<div class="school-card" id="sc-${s.id}" onclick="pickSchool('${s.id}')" style="${cardExtra}">
       <div class="school-name">${s.name}</div>
       <div class="school-sub">${s.dept}</div>
-      <span class="school-badge">${s.type}</span>
-    </div>`).join('');
+      <span class="school-badge" style="${badgeStyle}">${s.type}</span>
+    </div>`;
+  }).join('');
 }
 
 function pickSchool(id) {
@@ -274,7 +310,10 @@ function goTo1() { setStep(1); blob = null; }
 function goTo2() {
   if(!sel) return;
   p = Object.assign({}, sel.params);
-  document.getElementById('edit-title').textContent = sel.name + ' · ' + sel.dept + ' · ' + sel.type + ' · 格式参数';
+  const isCustom = sel.id === 'custom';
+  document.getElementById('edit-title').textContent = isCustom
+    ? '自定义格式 · 请按学校要求填写以下参数'
+    : sel.name + ' · ' + sel.dept + ' · ' + sel.type + ' · 格式参数';
   document.getElementById('edit-fields').innerHTML = FIELDS.map(sec => `
     <div class="edit-section">
       <div class="edit-section-title">${sec.section}</div>
